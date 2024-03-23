@@ -21,6 +21,13 @@
 \usepackage{xcolor}
 \usepackage{graphicx}
 
+% Algorithms
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\makeatletter
+\renewcommand{\ALG@name}{Algoritmus}
+\makeatother
+
 \graphicspath{ {./images/} }
 
 \usepackage{float}
@@ -106,6 +113,11 @@
     basicstyle=\small\ttfamily,
     numbers=left
 }
+
+% sazba matematických výrazů
+\newenvironment{conditions}[1][kde:]
+    {#1 \begin{tabular}[t]{>{$}l<{$} @{${}={}$} l}}
+    {\end{tabular}\\[\belowdisplayskip]}
 
 % barevné zvýraznění textů, které je nutno nahradit
 \newcommand{\ZT}[1]{\colorbox{yellow}{\color{red}{#1}}}
@@ -319,13 +331,48 @@ lorem ipsum dolor sit amet
 V této kapitole se zaměříme na představení klíčových metod předzpracování obrazu, které hrají zásadní roli v procesu analýzy a zpracování rentgenových snímků. Předzpracování obrazu představuje kritický krok v řadě aplikací strojového učení a počítačového vidění, neboť ovlivňuje kvalitu a efektivitu následné analýzy. Metody předzpracování obrazu mohou výrazně zlepšit kvalitu dat a zvýšit přesnost detekce objektů, segmentace obrazu či klasifikace. Specifický výběr těchto technik je klíčový pro zjištění přesnosti a efektivity moderních metod počítačového vidění, včetně strojového učení a hlubokého učení, které jsou stále častěji aplikovány na širokou škálu problémů v oblasti zpracování obrazu. Zejména v kontextu rentgenových snímků může předzpracování pomoci překonat některé běžné výzvy, jako je nízký kontrast, šum, nebo artefakty, které mohou snížit kvalitu obrazu a tím ovlivnit diagnózu nebo automatickou analýzu.\cite{ImportanceOfImageProcessing}
 
 \section{Klasické metody předzpracování obrazu}
-Následující sekce se zaměřuje na představení klasických metod a technik, které jsou využívány pro úpravu a zlepšení kvality obrazových dat před jejich dalším zpracováním. Budeme se tedy věnovat různým přístupům filtrace obrazu, metodám redukce šumu či zaostření obrazu a také technikám prahování a binarizace, které jsou fundamentální pro analýzu a interpretaci obrazových dat. Přestože se jedná o metody, které mohou být považovány za základní, jejich správná aplikace a kombinace mohou výrazně zlepšit výslednou kvalitu obrazu a přispět k efektivnějšímu rozpoznávání vzorů a objektů v obrazových datech. Podrobně prozkoumáme každou z těchto metod, přičemž budeme klást důraz na jejich význam pro přípravu dat k dalšímu zpracování.
+Následující sekce se zabývá představením klasických metod a technik, které jsou využívány pro úpravu a zlepšení kvality obrazových dat před jejich dalším zpracováním. Budeme se tedy věnovat různým přístupům filtrace obrazu, metodám redukce šumu či zaostření obrazu a také technikám prahování a binarizace, které jsou fundamentální pro analýzu a interpretaci obrazových dat. Přestože se jedná o metody, které mohou být považovány za základní, jejich správná aplikace a kombinace mohou výrazně zlepšit výslednou kvalitu obrazu a přispět k efektivnějšímu rozpoznávání vzorů a objektů v obrazových datech. Podrobně prozkoumáme každou z těchto metod, přičemž budeme klást důraz na jejich význam pro přípravu dat k dalšímu zpracování.
 
 \subsection{Filtrace a vylepšení obrazu}
 Filtrace a vylepšení obrazu jsou klíčové techniky v předzpracování obrazu, zaměřené na zlepšení vizuální kvality obrazových dat pro následné zpracování nebo analýzu. Cílem filtrace je odstranit nežádoucí artefakty, jako je šum, a zvýraznit důležité vlastnosti obrazu, například hrany. Vylepšení obrazu pak usiluje o zlepšení kontrastu, jasu a ostrosti, aby bylo zajištěno, že obrazová data jsou co nejvíce přístupná pro lidské vnímání nebo automatizované algoritmy. 
 Jedním z klíčů k úspěšné filtraci a zlepšení obrazu je výběr vhodné metody a jejích parametrů, které musí být pečlivě nastaveny v závislosti na charakteristikách obrazových dat a konkrétním účelu zpracování. 
 
 \subsubsection{Ekvalizace histogramu}
+Ekvalizace histogramu je fundamentální, ale mocná technika, která se používá pro zlepšení kontrastu v obrazových datech, zejména tam, kde původní obraz obsahuje špatně rozlišitelné detaily kvůli nedostatečnému rozsahu intenzit pixelů.
+
+Cílem ekvalizace histogramu je aplikovat transformaci na původní histogram obrazu, $H(i)$, kde $i$ představuje intenzitu pixelů v původním obrazu, tak, aby výsledný histogram měl uniformní rozložení. Tato transformace je založena na kumulativní distribuční funkci (CDF), $CDF(i)$, vypočítané z původního histogramu. $CDF(i)$ představuje součet pravděpodobností všech intenzit pixelů od nejnižší hodnoty až po intenzitu $i$ a slouží jako mapovací funkce pro přiřazení nových intenzit pixelů ve výsledném obraze. Matematicky lze CDF definovat jako CDF(j) = $\sum_{i=0}^{j} P(i)$, kde $P(j)$ je pravděpodobnost výskytu intenzity $j$ v původním obrazu, což se obvykle určí normalizací histogramu na celkový počet pixelů v obrazu. Nová intenzita pixelu $i'$ pro každý pixel s původní intenzitou $i$ ve výsledném obrazu je poté určena pomocí normalizované CDF, což zajišťuje, že všechny intenzity jsou rovnoměrně zastoupeny:
+\begin{equation}
+    i' = (L-1) \cdot CDF(i)
+\end{equation}
+\begin{conditions}
+    L &  je počet možných úrovní intenzity pixelů (např. $L = 256$ pro 8bitové obrazy)
+\end{conditions}
+Tímto způsobem transformace zvýší kontrast obrazu tak, že "roztáhne" rozložení intenzit pixelů přes celý dostupný rozsah, což zvýrazní detaily a zlepší vizuální vnímání obrazu. Ekvalizace histogramu tak přináší výrazné zlepšení v oblastech s nízkým kontrastem a umožňuje lepší vizualizaci detailů, což je zásadní pro dalšího zpracování obrazu. \cite{ComputerVisionMetrics} \cite{ComputerVisionForX-RayTesting}
+
+\begin{algorithm}
+    \caption{Ekvalizace histogramu}
+    \begin{algorithmic}[1]
+        \State \textbf{Vstup:} Původní obraz $Img$
+        \State \textbf{Výstup:} Obraz s ekvalizovaným histogramem $Img_{eq}$
+        \State Vypočítejte histogram $H$ z $Img$
+        \State Vypočítejte kumulativní histogram $CH$ z $H$
+        \State Normalizujte $CH$ na rozsah intenzit pixelů obrazu
+        \For{každý pixel $p$ v $Img$}
+            \State Nastavte $Img_{eq}[p]$ na hodnotu odpovídající $CH[Img[p]]$
+        \EndFor
+        \State \textbf{return} $Img_{eq}$
+    \end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Adaptivní ekvalizace histogramu}
+Adaptivní ekvalizace histogramu (AHE) představuje pokročilou metodu ekvalizace, která se snaží zlepšit kontrast obrazu lokálně, na rozdíl od globálního přístupu klasické ekvalizace histogramu. AHE algoritmus rozdělí původní obraz na malé, překrývající se bloky, nazývané dlaždice (tiles), a na každou z nich aplikuje ekvalizaci histogramu nezávisle. Tímto způsobem dokáže lépe zachytit lokální kontrastní charakteristiky obrazu a zvýraznit detaily v jednotlivých oblastech. Při překryvu dlaždic se výsledné intenzity pixelů na okrajích vypočítají jako vážený průměr z odpovídajících intenzit získaných z každé příslušné dlaždice, což zajišťuje hladký přechod mezi dlaždicemi. \cite{GraphicsGems}
+
+\subsubsection{Adaptivní ekvalizace histogramu s omezením kontrastu}
+Adaptivní ekvalizace histogramu s omezením kontrastu (CLAHE) byla vyvinuta s cílem předejít problémům spojeným s přílišným zvýrazněním šumu v homogenních oblastech obrazu, které nastává při použití AHE.
+
+Základní myšlenka CLAHE spočívá v rozdělení obrazu na malé, kontextově závislé bloky a aplikování ekvalizace histogramu na každý z těchto bloků. Aby se zabránilo nežádoucímu efektu nadměrného zvýšení kontrastu, aplikuje se na histogram každého bloku proces „osekání“ (clipping), kdy hodnoty histogramu přesahující předem definovaný limit jsou sníženy na tento limit a přebytečné hodnoty jsou rovnoměrně rozděleny mezi ostatní úrovně intenzity. To vede k vytvoření vyváženějšího rozložení intenzit v obrazu a zajišťuje, že zvýšení kontrastu nevede k nežádoucímu zvýraznění šumu. 
+
+Jedním z klíčových aspektů CLAHE je výběr „clip limitu“, což je parametr, který omezuje míru zvýšení kontrastu. Tento limit se obvykle definuje jako násobek průměrné hodnoty histogramu a jeho správné nastavení je zásadní pro dosažení optimálního výsledku. \cite{GraphicsGems}
 
 
 \subsubsection{Filtry pro zvýraznění ostrosti}
