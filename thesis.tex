@@ -333,9 +333,9 @@ V této kapitole se zaměříme na představení klíčových metod předzpracov
 \section{Klasické metody předzpracování obrazu}
 Následující sekce se zabývá představením klasických metod a technik, které jsou využívány pro úpravu a zlepšení kvality obrazových dat před jejich dalším zpracováním. Budeme se tedy věnovat různým přístupům filtrace obrazu, metodám redukce šumu či zaostření obrazu a také technikám prahování a binarizace, které jsou fundamentální pro analýzu a interpretaci obrazových dat. Přestože se jedná o metody, které mohou být považovány za základní, jejich správná aplikace a kombinace mohou výrazně zlepšit výslednou kvalitu obrazu a přispět k efektivnějšímu rozpoznávání vzorů a objektů v obrazových datech. Podrobně prozkoumáme každou z těchto metod, přičemž budeme klást důraz na jejich význam pro přípravu dat k dalšímu zpracování.
 
-\subsection{Filtrace a vylepšení obrazu}
-Filtrace a vylepšení obrazu jsou klíčové techniky v předzpracování obrazu, zaměřené na zlepšení vizuální kvality obrazových dat pro následné zpracování nebo analýzu. Cílem filtrace je odstranit nežádoucí artefakty, jako je šum, a zvýraznit důležité vlastnosti obrazu, například hrany. Vylepšení obrazu pak usiluje o zlepšení kontrastu, jasu a ostrosti, aby bylo zajištěno, že obrazová data jsou co nejvíce přístupná pro lidské vnímání nebo automatizované algoritmy. 
-Jedním z klíčů k úspěšné filtraci a zlepšení obrazu je výběr vhodné metody a jejích parametrů, které musí být pečlivě nastaveny v závislosti na charakteristikách obrazových dat a konkrétním účelu zpracování. 
+\subsection{Vylepšení obrazu}
+Vylepšení obrazu je klíčovou technikou v předzpracování obrazu, zaměřenou na zlepšení vizuální kvality obrazových dat pro následné zpracování nebo analýzu. Vylepšení obrazu usiluje o zlepšení kontrastu, jasu a ostrosti, aby bylo zajištěno, že obrazová data jsou co nejvíce přístupná pro lidské vnímání nebo automatizované algoritmy. 
+Jedním z klíčů k úspěšnému zlepšení obrazu je výběr vhodné metody a jejích parametrů, které musí být pečlivě nastaveny v závislosti na charakteristikách obrazových dat a konkrétním účelu zpracování. 
 
 \subsubsection{Ekvalizace histogramu}
 Ekvalizace histogramu je fundamentální, ale mocná technika, která se používá pro zlepšení kontrastu v obrazových datech, zejména tam, kde původní obraz obsahuje špatně rozlišitelné detaily kvůli nedostatečnému rozsahu intenzit pixelů.
@@ -374,6 +374,44 @@ Základní myšlenka CLAHE spočívá v rozdělení obrazu na malé, kontextově
 
 Jedním z klíčových aspektů CLAHE je výběr „clip limitu“, což je parametr, který omezuje míru zvýšení kontrastu. Tento limit se obvykle definuje jako násobek průměrné hodnoty histogramu a jeho správné nastavení je zásadní pro dosažení optimálního výsledku. \cite{GraphicsGems}
 
+\subsubsection{Unsharp masking}
+Unsharp masking je technika určená k zlepšení ostrosti obrazu tím, že zvýrazňuje hrany a detaily, které jsou v původním obrazu méně patrné. Klíčovým krokem této metody je vytvoření tzv. masky ostrých detailů odečtením rozmazané verze obrazu od jeho původní podoby. Rozmazaná verze obrazu se získává například pomocí Gaussova filtru, který je aplikován na původní obraz. Intenzita tohoto rozmazání určuje, jak silně budou hrany a detaily v maskě zvýrazněny. \cite{UnsharpMasking}
+
+\begin{algorithm}
+    \caption{Unsharp Masking}
+    \begin{algorithmic}[1]
+        \State \textbf{Vstup:} Původní obraz $I$, standardní odchylka Gaussova filtru $\sigma$, zesílení $\lambda$
+        \State \textbf{Výstup:} Vylepšený obraz $I'$
+        \State $G \gets \text{Gauss}(I, \sigma)$ \Comment{Vytvoření rozmazané verze obrazu pomocí Gaussova filtru}
+        \State $M \gets I - G$ \Comment{Vytvoření masky ostrých detailů odečtením rozmazaného obrazu}
+        \State $I' \gets I + \lambda M$ \Comment{Zvýšení ostrosti původního obrazu přičtením masky}
+    \end{algorithmic}
+\end{algorithm}
+
+V tomto procesu:
+\begin{itemize}
+    \item $\sigma$ určuje míru rozmazání při použití Gaussova filtru.
+    \item $\lambda$ je koeficient zesílení, který kontroluje míru, jakou jsou detaily zvýrazněny při přičítání masky k původnímu obrazu.
+\end{itemize}
+
+Při použítí unsharp masking metody může vznikat nežádoucí halo efektu. Tento efekt se projevuje jako nežádoucí světelný okraj kolem kontrastních hran, což může vést k umělému a nepřirozenému vzhledu obrazu. Integrace filtru zachovávajícího hrany (edge-preserving filter) do procesu unsharp masking je klíčová pro minimalizaci zmíněného efektu. Tento filtr umožňuje zvýraznit hrany a detaily v obrazu, aniž by docházelo k nežádoucím artefaktům. \cite{UnsharpMasking}
+
+Unsharp masking metoda je vhodná pro aplikace, kde je žádoucí zlepšit viditelnost detailů a hran. Důležitým aspektem při použití unsharp masking je správný výběr parametrů $\sigma$ a $\lambda$, jelikož tyto hodnoty významně ovlivňují výsledný vzhled obrazu. Příliš vysoké hodnoty mohou vést k nežádoucím artefaktům, jako jsou halo efekty kolem hran, zatímco příliš nízké hodnoty mohou mít za následek nedostatečné zvýraznění detailů.
+
+\subsection{Gama korekce}
+Gamma korekce je technika používaná k úpravě jasu obrazových dat. Principem této metody je aplikace nelineární transformace na původní pixelové hodnoty obrazu, čímž se upravuje celková jasová křivka podle gamma funkce. Tato korekce umožňuje efektivněji využít dynamický rozsah zobrazovacích zařízení a zlepšit viditelnost detailů v tmavých i světlých oblastech obrazu bez ztráty informací v ostatních částech obrazového spektra. \cite{PreprocessingBook}
+
+Aplikace gamma korekce se obvykle provádí podle vzorce:
+\begin{equation}
+    I' = I^\gamma
+\end{equation}
+\begin{conditions}
+    I &  původní intenzita pixelu \\
+    I' & nová intenzita pixelu po aplikaci gamma korekce \\
+    \gamma & gamma faktor, který určuje míru korekce
+\end{conditions}
+
+Hodnota gamma faktoru menší než 1 zvýší jas tmavších oblastí obrazu, zatímco hodnota větší než 1 ztmaví světlejší oblasti a zvýší kontrast.
 
 \subsubsection{Filtry pro zvýraznění ostrosti}
 
