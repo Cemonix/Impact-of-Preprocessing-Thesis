@@ -126,7 +126,7 @@
 % TOTO JE POTŘEBA ZMĚNIT !!!!!!
 \newcommand{\nazevcz}{Vliv předzpracování obrazu a augmentace dat na segmentaci rentgenových snímků}        % zde VYPLŇTE český název práce (přesně podle zadání!)
 \newcommand{\nazeven}{Impact of image preprocessing and data augmentation on segmentation of X-ray images}     % zde VYPLŇTE anglický název práce (přesně podle zadání!)
-\newcommand{\autor}{Milan Gittler}           % zde VYPLŇTE své jméno a příjmení
+\newcommand{\autor}{Bc. Milan Gittler}           % zde VYPLŇTE své jméno a příjmení
 \newcommand{\rok}{\the\year}                
 \newcommand{\vedouci}{RNDr. Jíří Škvára, Ph.D.}         
 % zde VYPLŇTE jméno a příjmení vedoucího práce, včetně titulů
@@ -398,7 +398,7 @@ Při použítí unsharp masking metody může vznikat nežádoucí halo efektu. 
 
 Unsharp masking metoda je vhodná pro aplikace, kde je žádoucí zlepšit viditelnost detailů a hran. Důležitým aspektem při použití unsharp masking je správný výběr parametrů $\sigma$ a $\lambda$, jelikož tyto hodnoty významně ovlivňují výsledný vzhled obrazu. Příliš vysoké hodnoty mohou vést k nežádoucím artefaktům, jako jsou halo efekty kolem hran, zatímco příliš nízké hodnoty mohou mít za následek nedostatečné zvýraznění detailů.
 
-\subsection{Gama korekce}
+\subsubsection{Gama korekce}
 Gamma korekce je technika používaná k úpravě jasu obrazových dat. Principem této metody je aplikace nelineární transformace na původní pixelové hodnoty obrazu, čímž se upravuje celková jasová křivka podle gamma funkce. Tato korekce umožňuje efektivněji využít dynamický rozsah zobrazovacích zařízení a zlepšit viditelnost detailů v tmavých i světlých oblastech obrazu bez ztráty informací v ostatních částech obrazového spektra. \cite{PreprocessingBook}
 
 Aplikace gamma korekce se obvykle provádí podle vzorce:
@@ -413,9 +413,32 @@ Aplikace gamma korekce se obvykle provádí podle vzorce:
 
 Hodnota gamma faktoru menší než 1 zvýší jas tmavších oblastí obrazu, zatímco hodnota větší než 1 ztmaví světlejší oblasti a zvýší kontrast.
 
-\subsubsection{Filtry pro zvýraznění ostrosti}
-
 \subsection{Redukce šumu}
+Redukce šumu ve snímcích je zásadní proces v digitálním zpracování obrazu, který má za cíl odstranit nebo minimalizovat vliv šumu přidaného během akvizice nebo přenosu obrazových dat. Šum může být způsoben různými externími faktory a může výrazně snížit kvalitu a čitelnost snímků, což má negativní dopad na jejich další analýzu a interpretaci.
+
+Šum je obvykle definován jako náhodná variace intenzity obrazových bodů (pixelů), která se projevuje jako viditelné zrnění nebo textura na snímku. Tato náhodná variabilita může být důsledkem základních fyzikálních procesů, jako je povaha fotonu světla nebo tepelná energie v senzorech obrazu. Může vzniknout v okamžiku snímání nebo při přenosu obrazu.
+
+Jednoduchý matematický model, kterým lze vyjádřit přítomnost aditivního šumu v obrazu, můžeme definovat jako:
+\begin{equation}
+    f(x, y) = I(x, y) + N(x, y)
+\end{equation}
+\begin{conditions}
+    f(x, y) & je pozorovaná intenzita pixelu se šumem \\
+    I(x, y) & je skutečná intenzita pixelu bez šumu \\
+    N(x, y) & je hodnota šumu přidaná k pixelu.
+\end{conditions}
+
+Redukce šumu je proto klíčovým krokem ve zpracování obrazu, který pomáhá zlepšit celkovou kvalitu snímků tím, že vyhlazuje obraz a odstraňuje nepřesnosti, avšak s opatrností, aby nedošlo k ztrátě důležitých detailů nebo hran v obrazu. Efektivní algoritmy pro redukci šumu se snaží dosáhnout rovnováhy mezi odstraněním šumu a zachováním nebo dokonce zvýrazněním důležitých vlastností obrazu, jako jsou hrany nebo textury. \cite{ImageDenoisingTechniques,ImageNoiseReductionIran}
+
+\subsubsection{Typy šumu ve snímcích}
+Existuje několik typů šumu, které se mohou ve snímcích vyskytovat. Tyto šumy se liší svým původem, charakteristikami a vlivem na kvalitu obrazu. Pro účinnou redukci šumu je klíčové rozpoznat, s jakým typem šumu máme co do činění, aby bylo možné zvolit nejvhodnější metodu pro jeho odstranění. Níže jsou uvedeny některé z nejčastějších typů šumu, které mohou ovlivnit digitální snímky. \cite{ImageDenoisingTechniques}
+
+\begin{itemize}
+    \item \textbf{Gaussovský šum} je pravděpodobně nejrozšířenějším typem šumu v digitálních obrazových systémech, způsobený především elektronickými fluktuacemi v senzoru a obvodech kamery. Je charakterizován normálním rozdělením intenzit pixelů kolem skutečné hodnoty s určitou střední hodnotou a standardní odchylkou. \[P(n) = \frac{1}{\sqrt{2\pi\sigma^2}} e^{-\frac{(n-\mu)^2}{2\sigma^2}}\] Gaussovský šum je obvykle považován za aditivní šum, což znamená, že jeho hodnota je nezávisle přidána k intenzitě každého pixelu.
+    \item \textbf{Impulzní šum (Šum soli a pepře)} se projevuje jako náhodné černé nebo bílé (nebo obojí) pixely rozptýlené po celém obrazu. Tento typ šumu může vzniknout kvůli chybám v senzoru nebo při přenosu dat. Na rozdíl od Gaussovského šumu je impulzní šum typicky nelineární a jeho redukce vyžaduje specifické nelineární filtrační techniky.
+    \item \textbf{Poissonův šum} je typ šumu, který je často přítomen v obrazových datech získaných z nízkých intenzit světla, jako jsou rentgenové snímky nebo mikroskopické snímky. Poissonův šum je důsledkem náhodného procesu počtu fotonů, které dopadají na senzor, a je charakterizován jako náhodný proces s diskrétním rozdělením pravděpodobnosti. Redukce Poissonova šumu vyžaduje specifické metody, které jsou schopny zacházet s diskrétními daty a zároveň zachovat důležité detaily v obraze. Poissonův čum může být modelován jako: \[ P(n) \sim \frac{e^{-\lambda} \lambda^n}{n!}\]
+    \item \textbf{Speckle šum} se řadí do skupiny multiplikativních šumů, které jsou často přítomny v ultrazvukovém a radarovém zobrazování. Tento šum je důsledkem koherence vlnění použitého pro snímání a interferencí mezi rozptýlenými vlnami. Speckle šum může být modelován pomocí Rayleighova nebo Gamma rozdělení v závislosti na povaze obrazových dat.
+\end{itemize}
 
 \subsection{Prahování a binarizace}
 
@@ -425,7 +448,7 @@ Hodnota gamma faktoru menší než 1 zvýší jas tmavších oblastí obrazu, za
 
 \section{Obecné postupy augmentace dat}
 
-\chapter{Ukázkové řešení úlohy intrusion detection}
+\chapter{Placeholder}
 
 \section{Popis úlohy}
 
