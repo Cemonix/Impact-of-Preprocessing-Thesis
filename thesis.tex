@@ -425,20 +425,88 @@ Jednoduchý matematický model, kterým lze vyjádřit přítomnost aditivního 
 \begin{conditions}
     f(x, y) & je pozorovaná intenzita pixelu se šumem \\
     I(x, y) & je skutečná intenzita pixelu bez šumu \\
-    N(x, y) & je hodnota šumu přidaná k pixelu.
+    N(x, y) & je hodnota šumu přidaná k pixelu
 \end{conditions}
 
 Redukce šumu je proto klíčovým krokem ve zpracování obrazu, který pomáhá zlepšit celkovou kvalitu snímků tím, že vyhlazuje obraz a odstraňuje nepřesnosti, avšak s opatrností, aby nedošlo k ztrátě důležitých detailů nebo hran v obrazu. Efektivní algoritmy pro redukci šumu se snaží dosáhnout rovnováhy mezi odstraněním šumu a zachováním nebo dokonce zvýrazněním důležitých vlastností obrazu, jako jsou hrany nebo textury. \cite{ImageDenoisingTechniques,ImageNoiseReductionIran}
 
 \subsubsection{Typy šumu ve snímcích}
-Existuje několik typů šumu, které se mohou ve snímcích vyskytovat. Tyto šumy se liší svým původem, charakteristikami a vlivem na kvalitu obrazu. Pro účinnou redukci šumu je klíčové rozpoznat, s jakým typem šumu máme co do činění, aby bylo možné zvolit nejvhodnější metodu pro jeho odstranění. Níže jsou uvedeny některé z nejčastějších typů šumu, které mohou ovlivnit digitální snímky. \cite{ImageDenoisingTechniques}
+Existuje několik typů šumu, které se mohou ve snímcích vyskytovat. Tyto šumy se liší svým původem, charakteristikami a vlivem na kvalitu obrazu. Pro účinnou redukci šumu je klíčové rozpoznat, s jakým typem šumu máme co do činění, aby bylo možné zvolit nejvhodnější metodu pro jeho odstranění. Níže jsou uvedeny některé z nejčastějších typů šumu, které mohou ovlivnit digitální snímky.
 
 \begin{itemize}
-    \item \textbf{Gaussovský šum} je pravděpodobně nejrozšířenějším typem šumu v digitálních obrazových systémech, způsobený především elektronickými fluktuacemi v senzoru a obvodech kamery. Je charakterizován normálním rozdělením intenzit pixelů kolem skutečné hodnoty s určitou střední hodnotou a standardní odchylkou. \[P(n) = \frac{1}{\sqrt{2\pi\sigma^2}} e^{-\frac{(n-\mu)^2}{2\sigma^2}}\] Gaussovský šum je obvykle považován za aditivní šum, což znamená, že jeho hodnota je nezávisle přidána k intenzitě každého pixelu.
-    \item \textbf{Impulzní šum (Šum soli a pepře)} se projevuje jako náhodné černé nebo bílé (nebo obojí) pixely rozptýlené po celém obrazu. Tento typ šumu může vzniknout kvůli chybám v senzoru nebo při přenosu dat. Na rozdíl od Gaussovského šumu je impulzní šum typicky nelineární a jeho redukce vyžaduje specifické nelineární filtrační techniky.
-    \item \textbf{Poissonův šum} je typ šumu, který je často přítomen v obrazových datech získaných z nízkých intenzit světla, jako jsou rentgenové snímky nebo mikroskopické snímky. Poissonův šum je důsledkem náhodného procesu počtu fotonů, které dopadají na senzor, a je charakterizován jako náhodný proces s diskrétním rozdělením pravděpodobnosti. Redukce Poissonova šumu vyžaduje specifické metody, které jsou schopny zacházet s diskrétními daty a zároveň zachovat důležité detaily v obraze. Poissonův čum může být modelován jako: \[ P(n) \sim \frac{e^{-\lambda} \lambda^n}{n!}\]
-    \item \textbf{Speckle šum} se řadí do skupiny multiplikativních šumů, které jsou často přítomny v ultrazvukovém a radarovém zobrazování. Tento šum je důsledkem koherence vlnění použitého pro snímání a interferencí mezi rozptýlenými vlnami. Speckle šum může být modelován pomocí Rayleighova nebo Gamma rozdělení v závislosti na povaze obrazových dat.
+    \item \textbf{Gaussovský šum} je pravděpodobně nejrozšířenějším typem šumu v digitálních obrazových systémech, způsobený především elektronickými fluktuacemi v senzoru a obvodech kamery. Je charakterizován normálním rozdělením intenzit pixelů kolem skutečné hodnoty s určitou střední hodnotou a standardní odchylkou. \[P(n) = \frac{1}{\sqrt{2\pi\sigma^2}} e^{-\frac{(n-\mu)^2}{2\sigma^2}}\] Gaussovský šum je obvykle považován za aditivní šum, což znamená, že jeho hodnota je nezávisle přidána k intenzitě každého pixelu. \cite{ImageDenoisingTechniques}
+    \item \textbf{Impulzní šum (Šum soli a pepře)} se projevuje jako náhodné černé nebo bílé (nebo obojí) pixely rozptýlené po celém obrazu. Tento typ šumu může vzniknout kvůli chybám v senzoru nebo při přenosu dat. Na rozdíl od Gaussovského šumu je impulzní šum typicky nelineární a jeho redukce vyžaduje specifické nelineární filtrační techniky. \cite{ImageDenoisingTechniques}
+    \item \textbf{Poissonův šum} je typ šumu, který je často přítomen v obrazových datech získaných z nízkých intenzit světla, jako jsou rentgenové snímky nebo mikroskopické snímky. Poissonův šum je důsledkem náhodného procesu počtu fotonů, které dopadají na senzor, a je charakterizován jako náhodný proces s diskrétním rozdělením pravděpodobnosti. Redukce Poissonova šumu vyžaduje specifické metody, které jsou schopny zacházet s diskrétními daty a zároveň zachovat důležité detaily v obraze. \cite{ImageDenoisingTechniques} Poissonův šum může být modelován jako: \[ P(n) \sim \frac{e^{-\lambda} \lambda^n}{n!}\] 
+    \item \textbf{Speckle šum} se řadí do skupiny multiplikativních šumů, které jsou často přítomny v ultrazvukovém a radarovém zobrazování. Tento šum je důsledkem koherence vlnění použitého pro snímání a interferencí mezi rozptýlenými vlnami. Speckle šum může být modelován pomocí Rayleighova nebo Gamma rozdělení v závislosti na povaze obrazových dat. \cite{ImageDenoisingTechniques}
 \end{itemize}
+
+\subsubsection{Typy filtrů pro redukci šumu}
+Pro efektivní redukci šumu ve snímcích jsou k dispozici různé typy filtrů, které se liší svým principem a účinností v závislosti na konkrétním typu šumu. Níže jsou uvedeny některé z nejčastěji používaných filtrů pro redukci šumu ve snímcích.
+
+\begin{itemize}
+    \item \textbf{Lineární filtrování}, také známo jako konvoluční filtrování, aplikuje lineární operátor na skupinu sousedicích pixelů v obrazu s cílem vyhladit nebo zvýraznit určité vlastnosti obrazu. Hlavní principem lineárních filtrů je konvoluce obrazu s jádrem filtru či maskou, což je malá matice daného rozměru, která určuje váhy pro každý pixel v okolí. Tyto váhy určují, jakým způsobem okolní pixely ovlivňují hodnotu pixelu výstupního obrazu. Hlavní výhodou lineárních filtrů je jejich jednoduchost a efektivita, což je dělá vhodnými pro rychlé a efektivní zpracování obrazu. Nicméně, lineární filtry mohou způsobovat neostrost hran and detailů ve snímcích. \cite{ImageDenoisingTechniques, XRayImageProcessing}
+    
+    \begin{equation}
+        I_{filtered}(x, y) = \sum_{i=-a}^{a} \sum_{j=-b}^{b} K(i, j) \cdot I(x-i, y-j)
+    \end{equation}
+    \begin{conditions}
+        I_{filtered}(x, y) & intenzita pixelu na pozici (x, y) ve filtrovaném snímku \\
+        K(i, j) & koeficienty kernelu \\
+        I(x-i, y-j) & intenzita pixelu v původním snímku v okolé pixelu (x, y) 
+    \end{conditions}
+    \item \textbf{Nelineární filtrování} je alternativní přístup k redukci šumu, který se zaměřuje na zachování hran a detailů v obraze. Nelineární filtry jsou schopny zacházet s nelineárními vztahy mezi pixely a jsou schopny lépe zachovat důležité strukturální vlastnosti obrazu. Nelineární filtry jsou proto obzvláště účinné při redukci impulzního či spekle šumu. \cite{ImageDenoisingTechniques, XRayImageProcessing}
+\end{itemize}
+
+\subsubsection{Gaussovský filtr}
+Gaussovský filtr reprezentuje jeden z nejčastěji používaných lineárních filtrů pro redukci šumu ve snímcích. Tento filtr je založen na aplikaci Gaussova jádra na obraz, což umožňuje vyhladit obraz a odstranit vysokofrekvenční šum. Gaussovský filtr je založen na principu aplikace Gaussovy funkce na vstupní obraz, která počítá vážený průměr okolí každého pixelu, s nejvyšší váhou soustředěnou na samotný pixel a se zmenšujícími se váhami pro sousední pixely na základě jejich prostorové vzdálenosti od středového pixelu. Gaussovský filtr je založen na konvoluci obrazu s Gaussovým jádrem, které je definováno jako:
+\begin{equation}
+    G(x, y) = \frac{1}{2\pi\sigma^2} e^{-\frac{x^2 + y^2}{2\sigma^2}}
+\end{equation}
+\begin{conditions}
+    G(x, y) & hodnota Gaussova jádra na pozici (x, y) \\
+    \sigma & standardní odchylka Gaussova jádra
+\end{conditions}
+
+Gaussovský filtr je schopen efektivně redukovat Gaussovský šum, vyhladit obraz a jednou z jeho hlavních výhod je jeho přirozená odezva na vysokofrekvenční oblasti, které potlačuje bez vytváření kroužkouvých artefaktů, které jsou běžné u low-pass filtrů.
+
+Přestože je Gaussovský filtr velmi účinný při vyhlazování a redukci šumu, volba směrodatné odchylky $\sigma$ je kritická. Příliš vysoká hodnota může vymazat důležité detaily spolu se šumem, zatímco příliš nízká hodnota nemusí šum dostatečně snížit. Navíc, izotropní povaha Gaussovského filtru znamená, že filtr rozmazává ve všech směrech stejnou měrou, což nemusí být žádoucí zejména tam, kde je potřeba zachování hran. \cite{XRayImageProcessing}
+
+\begin{algorithm}
+    \caption{Gaussovský filtr}
+    \begin{algorithmic}[1]
+        \State \textbf{Vstup:} Původní obraz $I$, standardní odchylka $\sigma$
+        \State \textbf{Výstup:} Vyhlazený obraz $I_{smoothed}$
+        \State Vytvořte Gaussovo jádro $G$ s rozměry $n \times n$ a $\sigma$
+        \State \textbf{Inicializuj} $I_{smoothed}$ jako prázdný obraz
+        \For{každý pixel $p$ v $I$}
+            \State Aplikujte Gaussovo jádro na okolí pixelu $p$
+            \State Nastavte hodnotu pixelu $p$ v $I_{smoothed}$ na vážený průměr hodnot v okolí
+        \EndFor
+        \State \textbf{return} $I_{smoothed}$
+    \end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Wienerův filtr}
+Wienerův filtr je adaptivní lineární filtr, který je často používán pro redukci šumu ve snímcích s cílem zachovat důležité detaily a strukturální vlastnosti obrazu. Wienerův filtr funguje na principu minimalizace střední kvadratické chyby (anglicky minimum mean squared error - MMSE)\footnote{MSE je metrika, která měří rozdíl mezi odhadovanými a skutečnými hodnotami. V případě Wienerova filtru se minimalizuje rozdíl mezi původním obrazem a obrazem se šumem.} mezi původním obrazem a obrazem se šumem. Matematicky je Wienerův filtr navržen tak, aby našel spektrální rovnováhu mezi inverzním filtrováním signálu a vyhlazováním šumu, s ohledem na výkonová spektra signálu a šumu. Odezva filtru je vypočítána pomocí výkonových spekter jak obrazu, tak šumu, což vede k optimálnímu vyvážení mezi inverzním filtrováním pro obnovu obrazu a potlačením šumu. To je zvláště užitečné v situacích, kde jsou známy nebo lze odhadnout jak charakteristiky obrazu, tak šumu.
+
+\begin{equation}
+    G(u,v) = \frac{1}{H(u,v)} \left[ \frac{\left| H(u,v) \right|^2}{\left| H(u,v) \right|^2 + \frac{S_{\eta}}{S_f}} \right]
+\end{equation}
+\begin{conditions}
+    G(u,v) & odhad originálního obrazu \\
+    H(u,v) & degradační funkce \\
+    S_{\eta} & výkonové spektrum šumu \\
+    S_f & výkonové spektrum originálního obrazu
+\end{conditions}
+
+Tento vztah představuje schopnost Wienerova filtru vyvažovat mezi inverzním filtrováním a vyhlazováním šumu s ohledem na degradační funkci a poměr signálu a šumu $\frac{S_{\eta}}{S_f}$\footnote{Poměr signálu a šumu (SNR) udává poměr mezi obrazem a úrovní šumu v daném obraze. Vysoká hodnota SNR značí, že signál je silnější než šum, což znamená, že obraz má vysokou kvalitu s minimálním množstvím šumu. Naopak nízká hodnota SNR indikuje, že šum je dominantní a signál je obtížně rozeznatelný.}. Filtr je více nakloněn k inverznímu filtrování, kde je magnituda degradační funkce velká vzhledem k šumu (vysoké SNR), a více k vyhlazování v opačném případě. \cite{WienerFilters}
+
+% TODO: Mediánový filtr a bilaterální filtr
+\subsubsection{Mediánový filtr}
+Mediánový filtr je nelineární filtr, který je často používán pro redukci impulzního šumu, jako je šum soli a pepře. Tento filtr je založen na principu nahrazení hodnoty pixelu mediánem z jeho okolí, což umožňuje efektivně odstranit extrémní hodnoty a zachovat důležité detaily a hrany v obraze. Mediánový filtr je obzvláště účinný při redukci impulzního šumu, který může způsobit výrazné zkreslení obrazu a snížit jeho kvalitu. Mediánový filtr je založen na výpočtu mediánu z hodnot pixelů v okolí, což zajišťuje, že nová hodnota pixelu bude odpovídat střední hodnotě v okolí a bude tak lépe reprezentovat skutečnou intenzitu pixelu. Mediánový filtr je schopen zachovat hrany a detaily v obraze, což je zásadní pro zachování důležitých strukturálních vlastností obrazu. \cite{ImageDenoisingTechniques}
+
+\subsubsection{Bilaterální filtr}
+Bilaterální filtr je nelineární filtr, který je často používán pro redukci šumu ve snímcích s cílem zachovat hrany a detaily v obraze. Tento filtr je založen na kombinaci prostorového a intenzitního jádra, což umožňuje vyhladit obraz a zároveň zachovat důležité strukturální vlastnosti. Bilaterální filtr je schopen zacházet s nelineárními vztahy mezi pixely a zároveň zachovat hrany a detaily v obraze, což je zásadní pro zachování důležitých strukturálních vlastností obrazu. Bilaterální filtr je založen na výpočtu váženého průměru hodnot pixelů v okolí, kde váhy jsou určeny na základě podobnosti intenzit pixelů a jejich prostorové vzdálenosti. Tento filtr je schopen efektivně redukovat šum a zároveň zachovat důležité detaily a hrany v obraze, což vede k zlepšení celkové kvality snímku. \cite{ImageDenoisingTechniques}
 
 \subsection{Prahování a binarizace}
 
