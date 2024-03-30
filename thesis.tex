@@ -115,8 +115,12 @@
 }
 
 % sazba matematických výrazů
+% \newenvironment{conditions}[1][kde:]
+%     {#1 \begin{tabular}[t]{>{$}l<{$} @{${}={}$} l}}
+%     {\end{tabular}\\[\belowdisplayskip]}
+
 \newenvironment{conditions}[1][kde:]
-    {#1 \begin{tabular}[t]{>{$}l<{$} @{${}={}$} l}}
+    {#1 \begin{tabular}[t]{>{$}l<{$} @{${}={}$} >{\raggedright\arraybackslash}p{12cm}}}
     {\end{tabular}\\[\belowdisplayskip]}
 
 % barevné zvýraznění textů, které je nutno nahradit
@@ -501,12 +505,35 @@ Wienerův filtr je adaptivní lineární filtr, který je často používán pro
 
 Tento vztah představuje schopnost Wienerova filtru vyvažovat mezi inverzním filtrováním a vyhlazováním šumu s ohledem na degradační funkci a poměr signálu a šumu $\frac{S_{\eta}}{S_f}$\footnote{Poměr signálu a šumu (SNR) udává poměr mezi obrazem a úrovní šumu v daném obraze. Vysoká hodnota SNR značí, že signál je silnější než šum, což znamená, že obraz má vysokou kvalitu s minimálním množstvím šumu. Naopak nízká hodnota SNR indikuje, že šum je dominantní a signál je obtížně rozeznatelný.}. Filtr je více nakloněn k inverznímu filtrování, kde je magnituda degradační funkce velká vzhledem k šumu (vysoké SNR), a více k vyhlazování v opačném případě. \cite{WienerFilters}
 
-% TODO: Mediánový filtr a bilaterální filtr
-\subsubsection{Mediánový filtr}
-Mediánový filtr je nelineární filtr, který je často používán pro redukci impulzního šumu, jako je šum soli a pepře. Tento filtr je založen na principu nahrazení hodnoty pixelu mediánem z jeho okolí, což umožňuje efektivně odstranit extrémní hodnoty a zachovat důležité detaily a hrany v obraze. Mediánový filtr je obzvláště účinný při redukci impulzního šumu, který může způsobit výrazné zkreslení obrazu a snížit jeho kvalitu. Mediánový filtr je založen na výpočtu mediánu z hodnot pixelů v okolí, což zajišťuje, že nová hodnota pixelu bude odpovídat střední hodnotě v okolí a bude tak lépe reprezentovat skutečnou intenzitu pixelu. Mediánový filtr je schopen zachovat hrany a detaily v obraze, což je zásadní pro zachování důležitých strukturálních vlastností obrazu. \cite{ImageDenoisingTechniques}
-
 \subsubsection{Bilaterální filtr}
-Bilaterální filtr je nelineární filtr, který je často používán pro redukci šumu ve snímcích s cílem zachovat hrany a detaily v obraze. Tento filtr je založen na kombinaci prostorového a intenzitního jádra, což umožňuje vyhladit obraz a zároveň zachovat důležité strukturální vlastnosti. Bilaterální filtr je schopen zacházet s nelineárními vztahy mezi pixely a zároveň zachovat hrany a detaily v obraze, což je zásadní pro zachování důležitých strukturálních vlastností obrazu. Bilaterální filtr je založen na výpočtu váženého průměru hodnot pixelů v okolí, kde váhy jsou určeny na základě podobnosti intenzit pixelů a jejich prostorové vzdálenosti. Tento filtr je schopen efektivně redukovat šum a zároveň zachovat důležité detaily a hrany v obraze, což vede k zlepšení celkové kvality snímku. \cite{ImageDenoisingTechniques}
+Bilaterální filtrování je nelineární technika pro vyhlazování obrazu, která zachovává hrany a redukuje šum. Na rozdíl od tradičních lineárních filtrů, které aplikují uniformní konvoluci napříč obrazem, bilaterální filtr kombinuje dva hlavní koncepty: prostorovou blízkost a podobnost intenzity. 
+
+Podobně jako Gaussův filtr, bilaterální filtr používá Gaussovu funkci k vážení pixelů založeně na jejich prostorové vzdálenosti od centrálního pixelu. Tím pádem, čím jsou pixely blíže k centrálnímu pixelu, tím větší váhu mají. Unikátní pro bilaterální filtr je fakt, že váhy jsou také přizpůsobeny na základě rozdílu intenzit mezi sousedními pixely a centrálním pixelem. Pixely s podobnou intenzitou jako centrální pixel získávají vyšší váhu, což umožňuje zachování ostrých hran a detailů. Pro každý pixel ve zpracovávaném obrazu filtr vyhodnotí jeho sousedy a aplikuje váhy založené na dvou zmíněných kritériích.\cite{BilateralFilter}
+
+Matematický vzorec pro bilaterální filtr aplikovaný na pixel p v obrazu I lze vyjádřit jako:
+\begin{equation}
+    BF[I](p) = \frac{1}{W_p} \sum_{q \in S} G_{\sigma_s}(||p-q||) \cdot G_{\sigma_r}(|I_p - I_q|) \cdot I_q
+\end{equation}
+\begin{conditions}
+    BF[I](p) & hodnota pixelu po aplikaci bilaterálního filtru \\
+    W_p & je normalizační faktor zajišťující, že součet vah je roven jedné \\
+    G_{\sigma_s} & prostorová Gaussova funkce, která snižuje vliv vzdálených pixelů na základě prostorové vzdálenosti ||p-q|| se standardní odchylkou $\sigma_s$ \\
+    G_{\sigma_r} & rozsahová Gaussova funkce, která redukuje vliv pixelů q na základě rozdílu intenzit $|I_p-I_q|$ se standardní odchylkou $\sigma_r$ \\
+    I_p & hodnota pixelu p \\
+    I_q & hodnota pixelu q \\
+\end{conditions}
+
+\begin{equation}
+    W_p = \sum_{q \in S} G_{\sigma_s}(||p-q||) \cdot G_{\sigma_r}(|I_p - I_q|)
+\end{equation}
+
+Na rozdíl od Gaussova filtru, který aplikuje vyhlazování uniformně a může vést k rozmazání ostrých hran, bilaterální filtr nabízí sofistikovanější přístup k redukci šumu. Jeho schopnost zachovat ostré hrany při současném snížení šumu v homogenních oblastech obrazu činí bilaterální filtr vysoce ceněným nástrojem v pokročilém zpracování obrazu. Avšak, s touto schopností přichází zvýšená výpočetní náročnost a potřeba pečlivého nastavení parametrů $\sigma_s$ a $\sigma_r$, což jsou aspekty, které je třeba zvážit pro dosažení optimálních výsledků. \cite{BilateralFilter}
+
+\subsubsection{Filtr ne-lokálních průměrů (Non-local means filter)}
+
+
+\subsubsection{Lokálně adaptivní mediánový filtr}
+
 
 \subsection{Prahování a binarizace}
 
@@ -516,17 +543,17 @@ Bilaterální filtr je nelineární filtr, který je často používán pro redu
 
 \section{Obecné postupy augmentace dat}
 
-\chapter{Placeholder}
+% \chapter{Placeholder}
 
-\section{Popis úlohy}
+% \section{Popis úlohy}
 
-\section{Načtení a transformace dat}
+% \section{Načtení a transformace dat}
 
-\section{Vizualizace dat}
+% \section{Vizualizace dat}
 
-\section{Tvorba modelů}
+% \section{Tvorba modelů}
 
-\section{Evaluace modelů}
+% \section{Evaluace modelů}
 
 \chapter{Zhodnocení} 
 
