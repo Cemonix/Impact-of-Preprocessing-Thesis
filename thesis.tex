@@ -529,11 +529,89 @@ Matematický vzorec pro bilaterální filtr aplikovaný na pixel p v obrazu I lz
 
 Na rozdíl od Gaussova filtru, který aplikuje vyhlazování uniformně a může vést k rozmazání ostrých hran, bilaterální filtr nabízí sofistikovanější přístup k redukci šumu. Jeho schopnost zachovat ostré hrany při současném snížení šumu v homogenních oblastech obrazu činí bilaterální filtr vysoce ceněným nástrojem v pokročilém zpracování obrazu. Avšak, s touto schopností přichází zvýšená výpočetní náročnost a potřeba pečlivého nastavení parametrů $\sigma_s$ a $\sigma_r$, což jsou aspekty, které je třeba zvážit pro dosažení optimálních výsledků. \cite{BilateralFilter}
 
-\subsubsection{Filtr ne-lokálních průměrů (Non-local means filter)}
+\subsubsection{Filtr ne-lokálních průměrů}
+Filtr ne-lokálních průměrů, anglicky Non-Local Means (NLM), představuje pokročilou techniku pro odstranění šumu z obrazu, která se vyznačuje výrazným zachováním detailů a hran. Na rozdíl od tradičních metod, které pracují s lokálními okolími pixelů, NLM vyhledává podobné fragmenty (patche) po celém obrazu a využívá jejich informace pro inteligentní vyhlazení cílového pixelu nebo oblasti, čímž se minimalizuje ztráta důležitých vizuálních prvků. NLM můžeme rozdělit na dvě varianty: pixelwise a patchwise NLM.
 
+První varianta, pixelwise NLM, se zaměřuje na každý pixel individuálně. Pro každý pixel p ve vstupním obraze 
+I se vypočítává jeho nová hodnota jako vážený průměr hodnot všech pixelů v obraze. Váhy závisí na podobnosti malých okolí (patchů) okolo každého pixelu a jsou určeny Euklidovskou vzdáleností mezi hodnotami pixelů v těchto okolích. Matematicky lze pixelwise NLM vyjádřit pomocí vztahu:
+
+\begin{equation}
+    I_{new}(p) = \frac{\sum_{q \in I} w(p,q) \cdot I(q)}{\sum_{q \in I} w(p,q)}
+\end{equation}
+\begin{conditions}
+    w(p,q) & představuje váhu založenou na podobnosti mezi okolím pixelů p a q \\
+    I(q) & hodnota pixelu q ve vstupním obraze
+\end{conditions}
+
+Druhá varianta, patchwise NLM, rozšiřuje přístup pixelwise metody tím, že jako základní jednotku pro výpočet váženého průměru bere celé patche namísto jednotlivých pixelů. Tím se zvyšuje robustnost metody vůči šumu, jelikož se lépe využívá strukturální informace z obrazu. Vztah pro patchwise NLM může být zapsán obdobně, avšak s důrazem na porovnávání celých patchů.
+
+Rozdíl mezi pixelwise a patchwise variantami spočívá v měřítku, na kterém se hodnotí podobnost mezi částmi obrazu. Zatímco pixelwise varianta se soustředí na detailní porovnání na úrovni pixelů, patchwise přístup poskytuje robustnější odhad tím, že zapojuje větší kontext okolí zkoumaného bodu.
+
+Algoritmus NLM, ať už v pixelwise či patchwise variantě, nabízí vynikající schopnost odstraňování šumu při zachování ostrých hran a detailů. Jeho hlavní nevýhodou však zůstává vysoká výpočetní náročnost, zejména v důsledku nutnosti porovnávat velké množství oblastí napříč celým obrazem. To činí aplikaci NLM, především v reálném čase, výzvou. Optimalizace a využití paralelního zpracování však mohou tuto nevýhodu zmírnit. \cite{NonLocalMeans}
 
 \subsubsection{Lokálně adaptivní mediánový filtr}
+Lokálně adaptivní mediánový filtr je inovativní metodou redukce šumu, specificky navrženou pro typ šumu speckle. Tento typ šumu je výsledkem interferencí mezi koherentními vlnami odraženými od cíle, což vede k zrnitému vzoru v pořízeném obraze. Tento filtr využívá lokální statistiky pro detekci speckle šumu a jeho nahrazení mediánovou hodnotou z lokálního okolí.
 
+Nejdříve je nutné zjistit celkový součet intenzit pixelů v určitém oblastním okně, které obklopuje centrální pixel. Tento součet je základem pro další výpočty statistik, jako je lokální průměr.
+\begin{equation}
+    S(i, j) = \sum_{n=j-k}^{j+k}\sum_{m=i-k}^{i+k} d(m, n)
+\end{equation}
+\begin{conditions}
+    k & poloměr posuvného okna okolo středového pixelu \\
+    d(m, n) & hodnota pixelu na pozici (m, n)
+\end{conditions}
+
+Dále se určí průměrná hodnota a lokální standardní odchylka hodnot pixelů v posuvném okně. Lokální průměr pomáhá rozlišit oblasti s vysokým a nízkým šumem tím, že poskytuje základní hodnotu pro porovnání s ostatními pixely. Standardní odchylka je míra variability nebo rozptylu hodnot pixelů kolem lokálního průměru, která pomáhá identifikovat pixely s výrazně odlišnými intenzitami (tj. šum).
+\begin{equation}
+    \mu(i, j) = \frac{S(i, j)}{N(i, j)}
+\end{equation}
+\begin{conditions}
+    S(i, j) & součet všech hodnot pixelů v posuvném okně \\
+    N(i, j) = (2k + 1)^2 & počet pixelů v posuvném okně
+\end{conditions}
+
+\begin{equation}
+    \sigma(i, j) = \sqrt{\frac{\sum_{m=i-k}^{i+k} \sum_{n=j-k}^{j+k} (d(m, n) - \mu(i, j))^2}{N(i, j)}}
+\end{equation}
+\begin{conditions}
+    \mu(i, j) & lokální průměr hodnot pixelů v posuvném okně
+\end{conditions}
+
+Na základě definováné dolní a horní hranice pro rozpoznání validních pixelů v rámci posuvného okna se rozhodne, které pixely jsou považovány za validní, a které představují potenciální šum.
+\begin{equation}
+    \begin{split}
+        LB(i, j) &= \mu(i, j) - M \cdot \sigma(i, j) \\
+        UB(i, j) &= \mu(i, j) + M \cdot \sigma(i, j)
+    \end{split}
+\end{equation}
+\begin{conditions}
+    \mu(i, j) & lokální průměr hodnot pixelů v posuvném okně \\
+    \sigma(i, j) & lokální standardní odchylka hodnot pixelů v posuvném okně \\
+    M & uživatelem definovaný násobitel pro určení prahu šumu
+\end{conditions}
+
+\begin{equation}
+    l(m, n) = 
+    \begin{cases} 
+        0 & \text{pokud } d(m, n) < LB(i, j) \text{ nebo } d(m, n) > UB(i, j) \\
+        1 & \text{pokud } LB(i, j) \leq d(m, n) \leq UB(i, j)
+    \end{cases}
+\end{equation}
+\begin{conditions}
+    LB(i, j), \ UB(i, j) & dolní a horní hranice pro validní hodnoty pixelů
+\end{conditions}
+
+Finální rovnice nahrazuje hodnotu centrálního pixelu, identifikovaného jako šum, mediánovou hodnotou z validních pixelů v okně. Tento proces zajišťuje, že hodnota pixelu reprezentuje jeho skutečné okolí a zlepšuje tak celkovou kvalitu obrazu redukcí šumu.
+\begin{equation}
+    r(i, j) = \text{median} d(m, n) \text{ | } l(m, n) = 1, i-k \le m, n \le i+k
+\end{equation}
+\begin{conditions}
+    l(m, n) & maska určující, zda je pixel na pozici $(m, n)$ považován za validní nebo za šum
+\end{conditions}
+
+Lokálně adaptivní mediánový filtr se ukazuje jako výrazně efektivní při odstraňování speckle šumu, což je běžný problém v rentgenových a jiných druzích medicínských snímků. Využití lokálních statistik umožňuje filtru selektivně cílit na šumové pixely, zatímco zachovává ostré hrany a důležité detaily, což je klíčové pro zachování diagnostické hodnoty obrazu.
+
+Nicméně, stejně jako většina pokročilých metod zpracování obrazu, i tento filtr má své nevýhody. Především je to jeho výpočetní náročnost, která může být limitující pro aplikace v reálném čase nebo při zpracování velkých datasetů. Navíc, efektivní využití filtru vyžaduje pečlivý výběr parametrů, což může vyžadovat pokročilé znalosti a experimentální ladění pro dosažení optimálních výsledků. \cite{LocalAdaptiveMedianFilter}
 
 \subsection{Prahování a binarizace}
 
