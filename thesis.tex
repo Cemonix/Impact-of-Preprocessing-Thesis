@@ -378,6 +378,13 @@ Základní myšlenka CLAHE spočívá v rozdělení obrazu na malé, kontextově
 
 Jedním z klíčových aspektů CLAHE je výběr „clip limitu“, což je parametr, který omezuje míru zvýšení kontrastu. Tento limit se obvykle definuje jako násobek průměrné hodnoty histogramu a jeho správné nastavení je zásadní pro dosažení optimálního výsledku. \cite{GraphicsGems}
 
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\linewidth]{Prilohy/Obrazky/ImageEnhancement.png}
+    \caption{Ukázka metod ekvalizace histogramu na rentgenovém snímku. CLAHE demonstruje lepší zachování detailů a kontrastu v porovnání s tradiční ekvalizací histogramu.}
+    \label{fig:histogram_equalization}
+\end{figure}
+
 \subsubsection{Unsharp masking}
 Unsharp masking je technika určená k zlepšení ostrosti obrazu tím, že zvýrazňuje hrany a detaily, které jsou v původním obrazu méně patrné. Klíčovým krokem této metody je vytvoření tzv. masky ostrých detailů odečtením rozmazané verze obrazu od jeho původní podoby. Rozmazaná verze obrazu se získává například pomocí Gaussova filtru, který je aplikován na původní obraz. Intenzita tohoto rozmazání určuje, jak silně budou hrany a detaily v maskě zvýrazněny. \cite{UnsharpMasking}
 
@@ -416,7 +423,7 @@ Aplikace gamma korekce se obvykle provádí podle vzorce:
 \end{conditions}
 
 Hodnota gamma faktoru menší než 1 zvýší jas tmavších oblastí obrazu, zatímco hodnota větší než 1 ztmaví světlejší oblasti a zvýší kontrast.
-
+ 
 \subsection{Redukce šumu}
 Redukce šumu ve snímcích je zásadní proces v digitálním zpracování obrazu, který má za cíl odstranit nebo minimalizovat vliv šumu přidaného během akvizice nebo přenosu obrazových dat. Šum může být způsoben různými externími faktory a může výrazně snížit kvalitu a čitelnost snímků, což má negativní dopad na jejich další analýzu a interpretaci.
 
@@ -491,7 +498,7 @@ Přestože je Gaussovský filtr velmi účinný při vyhlazování a redukci šu
 \end{algorithm}
 
 \subsubsection{Wienerův filtr}
-Wienerův filtr je adaptivní lineární filtr, který je často používán pro redukci šumu ve snímcích s cílem zachovat důležité detaily a strukturální vlastnosti obrazu. Wienerův filtr funguje na principu minimalizace střední kvadratické chyby (anglicky minimum mean squared error - MMSE)\footnote{MSE je metrika, která měří rozdíl mezi odhadovanými a skutečnými hodnotami. V případě Wienerova filtru se minimalizuje rozdíl mezi původním obrazem a obrazem se šumem.} mezi původním obrazem a obrazem se šumem. Matematicky je Wienerův filtr navržen tak, aby našel spektrální rovnováhu mezi inverzním filtrováním signálu a vyhlazováním šumu, s ohledem na výkonová spektra signálu a šumu. Odezva filtru je vypočítána pomocí výkonových spekter jak obrazu, tak šumu, což vede k optimálnímu vyvážení mezi inverzním filtrováním pro obnovu obrazu a potlačením šumu. To je zvláště užitečné v situacích, kde jsou známy nebo lze odhadnout jak charakteristiky obrazu, tak šumu.
+Wienerův filtr je adaptivní lineární filtr, který je často používán pro redukci šumu ve snímcích s cílem zachovat důležité detaily a strukturální vlastnosti obrazu. Wienerův filtr funguje na principu minimalizace střední kvadratické chyby (anglicky minimum mean squared error - MMSE)\footnote{MSE je metrika, která měří rozdíl mezi odhadovanými a skutečnými hodnotami. V případě Wienerova filtru se minimalizuje rozdíl mezi původním obrazem a obrazem se šumem.} mezi původním obrazem a obrazem se šumem. Matematicky je Wienerův filtr navržen tak, aby našel spektrální rovnováhu mezi inverzním filtrováním signálu a vyhlazováním šumu, s ohledem na výkonová spektra signálu a šumu. Odezva filtru je vypočítána pomocí výkonových spekter, což vede k optimálnímu vyvážení mezi inverzním filtrováním pro obnovu obrazu a potlačením šumu.
 
 \begin{equation}
     G(u,v) = \frac{1}{H(u,v)} \left[ \frac{\left| H(u,v) \right|^2}{\left| H(u,v) \right|^2 + \frac{S_{\eta}}{S_f}} \right]
@@ -612,6 +619,13 @@ Finální rovnice nahrazuje hodnotu centrálního pixelu, identifikovaného jako
 Lokálně adaptivní mediánový filtr se ukazuje jako výrazně efektivní při odstraňování speckle šumu, což je běžný problém v rentgenových a jiných druzích medicínských snímků. Využití lokálních statistik umožňuje filtru selektivně cílit na šumové pixely, zatímco zachovává ostré hrany a důležité detaily, což je klíčové pro zachování diagnostické hodnoty obrazu.
 
 Nicméně, stejně jako většina pokročilých metod zpracování obrazu, i tento filtr má své nevýhody. Především je to jeho výpočetní náročnost, která může být limitující pro aplikace v reálném čase nebo při zpracování velkých datasetů. Navíc, efektivní využití filtru vyžaduje pečlivý výběr parametrů, což může vyžadovat pokročilé znalosti a experimentální ladění pro dosažení optimálních výsledků. \cite{LocalAdaptiveMedianFilter}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\linewidth]{Prilohy/Obrazky/NoiseReduction.png}
+    \caption{Obrázky demonstrují účinky popsaných filtrů na kvalitu obrazu v porovnání s originálním snímkem a snímkem po umělém přidání šumu, aby se simulovalo běžné zkreslení vznikající během akvizice obrazu.}
+    \label{fig:noise_reduction_filters}
+\end{figure}
 
 \subsection{Prahování a binarizace}
 
