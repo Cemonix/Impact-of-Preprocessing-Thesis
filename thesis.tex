@@ -386,7 +386,7 @@ Jedním z klíčových aspektů CLAHE je výběr „clip limitu“, což je para
 \end{figure}
 
 \subsubsection{Unsharp masking}
-Unsharp masking je technika určená k zlepšení ostrosti obrazu tím, že zvýrazňuje hrany a detaily, které jsou v původním obrazu méně patrné. Klíčovým krokem této metody je vytvoření tzv. masky ostrých detailů odečtením rozmazané verze obrazu od jeho původní podoby. Rozmazaná verze obrazu se získává například pomocí Gaussova filtru, který je aplikován na původní obraz. Intenzita tohoto rozmazání určuje, jak silně budou hrany a detaily v maskě zvýrazněny. \cite{UnsharpMasking}
+Unsharp masking je technika určená k zlepšení ostrosti obrazu tím, že zvýrazňuje hrany a detaily, které jsou v původním obrazu méně patrné. Klíčovým krokem této metody je vytvoření tzv. masky ostrých detailů, která vznikne odečtením rozmazané verze obrazu od jeho původní podoby. Rozmazaná verze obrazu se získává například pomocí Gaussova filtru, který je aplikován na původní obraz. Intenzita tohoto rozmazání určuje, jak silně budou hrany a detaily v masce zvýrazněny. Následující rovnice ukazuje získání výsledného, zaostřeného snímku pomocí techniky unsharp masking. Po získání masky ostrých detailů se tato maska přičte zpět k původnímu obrazu. Tento krok zvyšuje kontrast a ostrost obrazu, přičemž zvýrazňuje oblasti s výraznými rozdíly mezi sousedními pixely. %\cite{UnsharpMasking}
 
 \begin{algorithm}
     \caption{Unsharp Masking}
@@ -405,7 +405,7 @@ V tomto procesu:
     \item $\lambda$ je koeficient zesílení, který kontroluje míru, jakou jsou detaily zvýrazněny při přičítání masky k původnímu obrazu.
 \end{itemize}
 
-Při použítí unsharp masking metody může vznikat nežádoucí halo efektu. Tento efekt se projevuje jako nežádoucí světelný okraj kolem kontrastních hran, což může vést k umělému a nepřirozenému vzhledu obrazu. Integrace filtru zachovávajícího hrany (edge-preserving filter) do procesu unsharp masking je klíčová pro minimalizaci zmíněného efektu. Tento filtr umožňuje zvýraznit hrany a detaily v obrazu, aniž by docházelo k nežádoucím artefaktům. \cite{UnsharpMasking}
+Při použítí unsharp masking metody může vznikat nežádoucí halo efekt. Tento efekt se projevuje jako nežádoucí světelný okraj kolem kontrastních hran, což může vést k umělému a nepřirozenému vzhledu obrazu. Integrace filtru zachovávajícího hrany (edge-preserving filter) do procesu unsharp masking může být klíčová pro minimalizaci zmíněného efektu. %\cite{UnsharpMasking}
 
 Unsharp masking metoda je vhodná pro aplikace, kde je žádoucí zlepšit viditelnost detailů a hran. Důležitým aspektem při použití unsharp masking je správný výběr parametrů $\sigma$ a $\lambda$, jelikož tyto hodnoty významně ovlivňují výsledný vzhled obrazu. Příliš vysoké hodnoty mohou vést k nežádoucím artefaktům, jako jsou halo efekty kolem hran, zatímco příliš nízké hodnoty mohou mít za následek nedostatečné zvýraznění detailů.
 
@@ -469,7 +469,7 @@ Pro efektivní redukci šumu ve snímcích jsou k dispozici různé typy filtrů
 \end{itemize}
 
 \subsubsection{Gaussovský filtr}
-Gaussovský filtr reprezentuje jeden z nejčastěji používaných lineárních filtrů pro redukci šumu ve snímcích. Tento filtr je založen na aplikaci Gaussova jádra na obraz, což umožňuje vyhladit obraz a odstranit vysokofrekvenční šum. Gaussovský filtr je založen na principu aplikace Gaussovy funkce na vstupní obraz, která počítá vážený průměr okolí každého pixelu, s nejvyšší váhou soustředěnou na samotný pixel a se zmenšujícími se váhami pro sousední pixely na základě jejich prostorové vzdálenosti od středového pixelu. Gaussovský filtr je založen na konvoluci obrazu s Gaussovým jádrem, které je definováno jako:
+Gaussovský filtr reprezentuje jeden z nejčastěji používaných lineárních filtrů pro redukci šumu ve snímcích. Tento filtr je založen na aplikaci Gaussova jádra na obraz, což umožňuje odstranit vysokofrekvenční šum. Gaussovský filtr je založen na principu aplikace Gaussovy funkce na vstupní obraz, která počítá vážený průměr okolí každého pixelu, s nejvyšší váhou soustředěnou na samotný pixel a se zmenšujícími se váhami pro sousední pixely na základě jejich prostorové vzdálenosti od středového pixelu. Gaussovský filtr je založen na konvoluci obrazu s Gaussovým jádrem, které je definováno jako:
 \begin{equation}
     G(x, y) = \frac{1}{2\pi\sigma^2} e^{-\frac{x^2 + y^2}{2\sigma^2}}
 \end{equation}
@@ -478,9 +478,9 @@ Gaussovský filtr reprezentuje jeden z nejčastěji používaných lineárních 
     \sigma & standardní odchylka Gaussova jádra
 \end{conditions}
 
-Gaussovský filtr je schopen efektivně redukovat Gaussovský šum, vyhladit obraz a jednou z jeho hlavních výhod je jeho přirozená odezva na vysokofrekvenční oblasti, které potlačuje bez vytváření kroužkouvých artefaktů, které jsou běžné u low-pass filtrů.
+Gaussovský filtr je schopen efektivně redukovat Gaussovský šum a jednou z hlavních výhod je jeho přirozená odezva na vysokofrekvenční oblasti, které potlačuje bez vytváření kroužkouvých artefaktů, které jsou běžné u low-pass filtrů.
 
-Přestože je Gaussovský filtr velmi účinný při vyhlazování a redukci šumu, volba směrodatné odchylky $\sigma$ je kritická. Příliš vysoká hodnota může vymazat důležité detaily spolu se šumem, zatímco příliš nízká hodnota nemusí šum dostatečně snížit. Navíc, izotropní povaha Gaussovského filtru znamená, že filtr rozmazává ve všech směrech stejnou měrou, což nemusí být žádoucí zejména tam, kde je potřeba zachování hran. \cite{XRayImageProcessing}
+Přestože je Gaussovský filtr velmi účinný při redukci šumu, volba směrodatné odchylky $\sigma$ je kritická. Příliš vysoká hodnota může vymazat důležité detaily spolu se šumem, zatímco příliš nízká hodnota nemusí šum dostatečně snížit. Navíc, izotropní povaha Gaussovského filtru znamená, že filtr rozmazává ve všech směrech stejnou měrou, což nemusí být žádoucí zejména tam, kde je potřeba zachování hran. \cite{XRayImageProcessing}
 
 \begin{algorithm}
     \caption{Gaussovský filtr}
@@ -496,21 +496,6 @@ Přestože je Gaussovský filtr velmi účinný při vyhlazování a redukci šu
         \State \textbf{return} $I_{smoothed}$
     \end{algorithmic}
 \end{algorithm}
-
-\subsubsection{Wienerův filtr}
-Wienerův filtr je adaptivní lineární filtr, který je často používán pro redukci šumu ve snímcích s cílem zachovat důležité detaily a strukturální vlastnosti obrazu. Wienerův filtr funguje na principu minimalizace střední kvadratické chyby (anglicky minimum mean squared error - MMSE)\footnote{MSE je metrika, která měří rozdíl mezi odhadovanými a skutečnými hodnotami. V případě Wienerova filtru se minimalizuje rozdíl mezi původním obrazem a obrazem se šumem.} mezi původním obrazem a obrazem se šumem. Matematicky je Wienerův filtr navržen tak, aby našel spektrální rovnováhu mezi inverzním filtrováním signálu a vyhlazováním šumu, s ohledem na výkonová spektra signálu a šumu. Odezva filtru je vypočítána pomocí výkonových spekter, což vede k optimálnímu vyvážení mezi inverzním filtrováním pro obnovu obrazu a potlačením šumu.
-
-\begin{equation}
-    G(u,v) = \frac{1}{H(u,v)} \left[ \frac{\left| H(u,v) \right|^2}{\left| H(u,v) \right|^2 + \frac{S_{\eta}}{S_f}} \right]
-\end{equation}
-\begin{conditions}
-    G(u,v) & odhad originálního obrazu \\
-    H(u,v) & degradační funkce \\
-    S_{\eta} & výkonové spektrum šumu \\
-    S_f & výkonové spektrum originálního obrazu
-\end{conditions}
-
-Tento vztah představuje schopnost Wienerova filtru vyvažovat mezi inverzním filtrováním a vyhlazováním šumu s ohledem na degradační funkci a poměr signálu a šumu $\frac{S_{\eta}}{S_f}$\footnote{Poměr signálu a šumu (SNR) udává poměr mezi obrazem a úrovní šumu v daném obraze. Vysoká hodnota SNR značí, že signál je silnější než šum, což znamená, že obraz má vysokou kvalitu s minimálním množstvím šumu. Naopak nízká hodnota SNR indikuje, že šum je dominantní a signál je obtížně rozeznatelný.}. Filtr je více nakloněn k inverznímu filtrování, kde je magnituda degradační funkce velká vzhledem k šumu (vysoké SNR), a více k vyhlazování v opačném případě. \cite{WienerFilters}
 
 \subsubsection{Bilaterální filtr}
 Bilaterální filtrování je nelineární technika pro vyhlazování obrazu, která zachovává hrany a redukuje šum. Na rozdíl od tradičních lineárních filtrů, které aplikují uniformní konvoluci napříč obrazem, bilaterální filtr kombinuje dva hlavní koncepty: prostorovou blízkost a podobnost intenzity. 
@@ -536,8 +521,43 @@ Matematický vzorec pro bilaterální filtr aplikovaný na pixel p v obrazu I lz
 
 Na rozdíl od Gaussova filtru, který aplikuje vyhlazování uniformně a může vést k rozmazání ostrých hran, bilaterální filtr nabízí sofistikovanější přístup k redukci šumu. Jeho schopnost zachovat ostré hrany při současném snížení šumu v homogenních oblastech obrazu činí bilaterální filtr vysoce ceněným nástrojem v pokročilém zpracování obrazu. Avšak, s touto schopností přichází zvýšená výpočetní náročnost a potřeba pečlivého nastavení parametrů $\sigma_s$ a $\sigma_r$, což jsou aspekty, které je třeba zvážit pro dosažení optimálních výsledků. \cite{BilateralFilter}
 
+\subsubsection{Wienerův filtr}
+Wienerův filtr je adaptivní lineární filtr, který je často používán pro redukci aditivního šumu ve snímcích s cílem zachovat důležité detaily a strukturální vlastnosti obrazu. Wienerův filtr funguje na principu minimalizace střední kvadratické chyby (anglicky minimum mean squared error - MMSE)\footnote{MSE je metrika, která měří rozdíl mezi odhadovanými a skutečnými hodnotami. V případě Wienerova filtru se minimalizuje rozdíl mezi původním obrazem a obrazem se šumem.} mezi původním obrazem a obrazem se šumem. Matematicky je Wienerův filtr navržen tak, aby našel spektrální rovnováhu mezi inverzním filtrováním signálu a vyhlazováním šumu, s ohledem na výkonová spektra signálu a šumu. Odezva filtru je vypočítána pomocí výkonových spekter, což vede k optimálnímu vyvážení mezi inverzním filtrováním pro obnovu obrazu a potlačením šumu.
+
+\begin{equation}
+    G(u,v) = \frac{1}{H(u,v)} \left[ \frac{\left| H(u,v) \right|^2}{\left| H(u,v) \right|^2 + \frac{S_{\eta}}{S_f}} \right]
+\end{equation}
+\begin{conditions}
+    G(u,v) & odhad originálního obrazu \\
+    H(u,v) & degradační funkce \\
+    S_{\eta} & výkonové spektrum šumu \\
+    S_f & výkonové spektrum originálního obrazu
+\end{conditions}
+
+Tento vztah představuje schopnost Wienerova filtru vyvažovat mezi inverzním filtrováním a vyhlazováním šumu s ohledem na degradační funkci a poměr signálu a šumu $\frac{S_{\eta}}{S_f}$\footnote{Poměr signálu a šumu (SNR) udává poměr mezi obrazem a úrovní šumu v daném obraze. Vysoká hodnota SNR značí, že signál je silnější než šum, což znamená, že obraz má vysokou kvalitu s minimálním množstvím šumu. Naopak nízká hodnota SNR indikuje, že šum je dominantní a signál je obtížně rozeznatelný.}. Filtr je více nakloněn k inverznímu filtrování, kde je magnituda degradační funkce velká vzhledem k šumu (vysoké SNR), a více k vyhlazování v opačném případě. \cite{WienerFilters}
+
+\subsubsection{Mediánový filtr}
+Medianový filtr je robustní nelineární filtrační technika, který se používá k redukci impulzního šumu (šumu soli a pepře). Medianový filtr funguje tak, že posouvá okno po každém pixelu obrazu, shromažďuje hodnoty pixelů z okolí daného pixelu a nahrazuje středový pixel mediánem těchto hodnot. Okno, které se obvykle používá, je čtvercové (např. 3x3, 5x5) v závislosti na stupni šumu a požadované úrovni zachování detailů. Na rozdíl od průměrových filtrů, které také snižují šum, ale mají tendenci rozmazávat hrany, medianový filtr hrany zachovává. Dále také medianový filtr nezávisí na předpokladu, že šum je specifického typu nebo variance.
+
+\begin{algorithm}
+    \caption{Medianový filtr}
+    \begin{algorithmic}[1]
+        \State \textbf{Vstup:} Původní obraz $I$, velikost okna $k$
+        \State \textbf{Výstup:} Obraz po redukci šumu $I_{filtered}$
+        \State \textbf{Inicializuj} $I_{filtered}$ jako prázdný obraz
+        \For{každý pixel $p$ v $I$}
+            \State \text{okolí} $\gets$ \text{extrahuj\_okolí}($I$, $p$, $k$)
+            \State \text{medián} $\gets$ \text{vypočti\_medián}(okolí)
+            \State \text{Nastavte hodnotu pixelu} $p$ v $I_{filtered}$ na \text{medián}
+        \EndFor
+        \State \textbf{return} $I_{filtered}$
+    \end{algorithmic}
+\end{algorithm}
+
+Přestože je medianový filtr účinný, má svá omezení, zejména při vysokých úrovních šumu nebo když mají obrazy jemné strukturální detaily. Za těchto podmínek může filtr odstranit užitečné informace spolu se šumem. Navíc jeho výkon se může zhoršit, pokud není velikost okna správně zvolena, protože příliš velké okno může odstranit příliš mnoho detailů, zatímco příliš malé okno nemusí efektivně odstranit dostatek šumu.
+
 \subsubsection{Filtr ne-lokálních průměrů}
-Filtr ne-lokálních průměrů, anglicky Non-Local Means (NLM), představuje pokročilou techniku pro odstranění šumu z obrazu, která se vyznačuje výrazným zachováním detailů a hran. Na rozdíl od tradičních metod, které pracují s lokálními okolími pixelů, NLM vyhledává podobné fragmenty (patche) po celém obrazu a využívá jejich informace pro inteligentní vyhlazení cílového pixelu nebo oblasti, čímž se minimalizuje ztráta důležitých vizuálních prvků. NLM můžeme rozdělit na dvě varianty: pixelwise a patchwise NLM.
+Filtr ne-lokálních průměrů, anglicky Non-Local Means (NLM), představuje pokročilou techniku pro odstranění šumu z obrazu (převážně gaussovského šumu), která se vyznačuje výrazným zachováním detailů a hran. Na rozdíl od tradičních metod, které pracují s lokálními okolími pixelů, NLM vyhledává podobné fragmenty (patche) po celém obrazu a využívá jejich informace pro inteligentní vyhlazení cílového pixelu nebo oblasti, čímž se minimalizuje ztráta důležitých vizuálních prvků. NLM můžeme rozdělit na dvě varianty: pixelwise a patchwise NLM.
 
 První varianta, pixelwise NLM, se zaměřuje na každý pixel individuálně. Pro každý pixel p ve vstupním obraze 
 I se vypočítává jeho nová hodnota jako vážený průměr hodnot všech pixelů v obraze. Váhy závisí na podobnosti malých okolí (patchů) okolo každého pixelu a jsou určeny Euklidovskou vzdáleností mezi hodnotami pixelů v těchto okolích. Matematicky lze pixelwise NLM vyjádřit pomocí vztahu:
@@ -610,7 +630,7 @@ Na základě definováné dolní a horní hranice pro rozpoznání validních pi
 
 Finální rovnice nahrazuje hodnotu centrálního pixelu, identifikovaného jako šum, mediánovou hodnotou z validních pixelů v okně. Tento proces zajišťuje, že hodnota pixelu reprezentuje jeho skutečné okolí a zlepšuje tak celkovou kvalitu obrazu redukcí šumu.
 \begin{equation}
-    r(i, j) = \text{median} d(m, n) \text{ | } l(m, n) = 1, i-k \le m, n \le i+k
+    r(i, j) = \text{median } d(m, n) \text{ | } l(m, n) = 1, i-k \le m, n \le i+k
 \end{equation}
 \begin{conditions}
     l(m, n) & maska určující, zda je pixel na pozici $(m, n)$ považován za validní nebo za šum
@@ -635,7 +655,7 @@ Nicméně, stejně jako většina pokročilých metod zpracování obrazu, i ten
 
 \section{Obecné postupy augmentace dat}
 
-% \chapter{Placeholder}
+\chapter{Placeholder}
 
 % \section{Popis úlohy}
 
