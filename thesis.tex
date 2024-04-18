@@ -120,8 +120,8 @@
 %     {\end{tabular}\\[\belowdisplayskip]}
 
 \newenvironment{conditions}[1][kde:]
-    {#1 \begin{tabular}[t]{>{$}l<{$} @{${}={}$} >{\raggedright\arraybackslash}p{12cm}}}
-    {\end{tabular}\\[\belowdisplayskip]}
+    {#1 \begin{tabular}[t]{>{$}l<{$} @{${}={}$} >{\raggedright\arraybackslash}p{10cm}}}
+    {\end{tabular}}
 
 % barevné zvýraznění textů, které je nutno nahradit
 \newcommand{\ZT}[1]{\colorbox{yellow}{\color{red}{#1}}}
@@ -643,7 +643,7 @@ Nicméně, stejně jako většina pokročilých metod zpracování obrazu, i ten
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\linewidth]{Prilohy/Obrazky/NoiseReduction.png}
-    \caption{Obrázky demonstrují účinky popsaných filtrů na kvalitu obrazu v porovnání s originálním snímkem a snímkem po umělém přidání šumu, aby se simulovalo běžné zkreslení vznikající během akvizice obrazu.}
+    \caption{Snímky demonstrují účinky popsaných filtrů na kvalitu obrazu v porovnání s originálním snímkem a snímkem po umělém přidání šumu, aby se simulovalo běžné zkreslení vznikající během akvizice obrazu.}
     \label{fig:noise_reduction_filters}
 \end{figure}
 
@@ -658,13 +658,67 @@ Neuronové sítě, a zvláště konvoluční neuronové sítě (CNN), jsou vysoc
 
 Využití neuronových sítí však také přináší výzvy, včetně potřeby velkého množství anotovaných trénovacích dat a výpočetně náročných modelů, které mohou vyžadovat specializovanou hardwarovou podporu pro efektivní trénink a nasazení. 
 
-Následující sekce bude zaměřena na nejčastěji využívané architekty neuronových sítí pro předzpracování obrazu, s důrazem na konvoluční neuronové sítě (CNN).
+Následující sekce bude zaměřena na nejčastěji využívané architekty neuronových sítí pro předzpracování obrazu, s důrazem na konvoluční neuronové sítě (CNN). \cite{CNNConcepts}
 
 \subsection{Úvod do konvolučních neuronových sítí}
+Neuronové sítě jsou základním stavebním prvkem moderního strojového učení a mají zásadní význam pro rozvoj oblastí jako je zpracování přirozeného jazyka či obrazu, rozpoznávání objektů v obraze, při analýze signálu, v robotice a mnoha jiných důležitých oborech. Tyto systémy jsou inspirovány strukturou a funkcí lidského mozku a jsou navrženy tak, aby modelovaly složité vzory a vztahy v datech. Strukturálně jsou neuronové sítě složeny z vrstev neuronů, což jsou jednotky zpracovávající informace, které jsou propojeny spojeními, ohodnocenými vahami.
+
+\subsubsection{Základní komponenty neuronových sítí}
+Základem neuronové sítě je její architektura, která je definována několika klíčovými komponentami. Tyto komponenty jsou základem pro učení a zpracování dat v síti. V následujícím seznamu jsou jednotlivé komponenty podrobněji popsány:
+
+\begin{itemize}
+    \item \textbf{Neuron} Neuron v neuronové síti je elementární jednotka, která simuluje chování neuronu v biologických systémech. Přijímá vstup $x = (x_1, x_2, x_3, ..., x_n)$, který je zpracován a následně vrácen na výstupu. Tento výstup je vstupen do dalšího neuronu nebo je součástí koncového výstupu ze sítě.
+        \begin{equation}
+            z = Wx + b
+        \end{equation}
+        \begin{conditions}
+            W & reprezentuje váhy, jenž jsou parametry určující sílu signálu mezi neurony. \\
+            b & bias, což je parametr posunutí, který upravuje výstup neuronu před aplikací aktivační funkce.
+        \end{conditions}
+    \item \textbf{Vrstvy (Layers)} Vrstvy se skládají z neuronů a jsou základem architektury neuronové sítě. Každá vrstva plní specifickou funkci v procesu učení. Vrstvy mohou být kategorizovány do tří typů:
+        \begin{itemize}
+            \item \textbf{Vstupní vrstva (Input layer)} Tato vrstva přijímá surová data a připravuje je pro další zpracování v síti. Každý neuron této vrstvy přímo reprezentuje jednu vlastnost vstupního datového vektoru.
+            \item \textbf{Skyté vrstvy (Hidden layers)} Skryté vrstvy jsou mezi vstupní a výstupní vrstvou a jejich úkolem je zpracování signálů přijatých od vstupní vrstvy. Komplexnost a hloubka těchto vrstev jsou klíčové pro schopnost sítě učit se složité vzory.
+            \item \textbf{Výstupní vrsta (Output layer) } Poslední výstupní vrstva generuje predikce určené neuronovou sítí. Například v klasifikačních úlohách může tato vrstva používat softmax funkci\footnote{Softmax funkce se často používá jako aktivační funkce v poslední vrstvě neuronové sítě při klasifikačních úlohách. Tato funkce převádí výstupní hodnoty neuronů na pravděpodobnostní rozdělení mezi různými třídami. Matematický vzorec pro softmax funkci je definován následovně: $\text{softmax}(z_i) = \frac{e^{z_i}}{\sum_{j=1}^{N} e^{z_j}}$}.
+        \end{itemize}
+    \item \textbf{Aktivační funkce (Activation function)} Aktivační funkce je důležitou složkou neuronových sítí, která umožňuje modelování nelineárních vztahů. Funkce, jako je sigmoid, tanh a ReLU (Rectified Linear Unit), jsou běžně používány k výpočtu výstupu z neuronů na základě vstupu a vah. Například, ReLU, která je definována jako $ReLU(x) = max(0, x)$, je populární pro svou schopnost rychle konvergovat během tréninku a minimalizovat problém mizejících gradientů \footnote{Mizející gradienty jsou problém, kdy gradient ztrátové funkce klesá exponenciálně rychle s každou vrstvou v síti, což způsobuje, že váhy v raných vrstvách se téměř neaktualizují. Tento jev výrazně zpomaluje trénink a může způsobit, že síť nedokáže efektivně učit složité vzory.}.
+    \item \textbf{Ztrátová funkce (Loss function)} Ztrátová funkce, někdy nazývaná penalizační funkce, poskytuje kvantitativní hodnocení toho, jak daleko jsou predikce neuronové sítě od skutečných hodnot. Během tréninku neuronové sítě je hlavním cílem minimalizace této funkce. Mezi běžné ztrátové funkce se řadí střední kvadratická chyba (MSE) pro regresní úkoly a cross-entropy pro klasifikační úkoly. 
+    \item \textbf{Optimalizační algoritmus (Optimizer)} Optimalizační algoritmy jsou základem učení neuronových sítí, protože určují, jak se síť učí z dat tím, že iterativně upravují váhy a biasy k minimalizaci ztrátové funkce. Stochastic Gradient Descent (SGD) provádí tuto úpravu tak, že v každém kroku tréninku náhodně vybere vzorek dat a spočítá gradient ztrátové funkce pouze na základě tohoto vzorku:
+    Adam a RMSprop jsou pokročilejší varianty, které se snaží zlepšit konvergenci SGD tím, že upravují rychlost učení pro každý parametr individuálně, což může vést k rychlejšímu a stabilnějšímu učení, zejména v komplexních sítích.
+\end{itemize}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\linewidth]{Prilohy/Obrazky/NNComponents.png}
+    \caption{Ilustrace neuronové jednotky, ukazující základní komponenty jako vstup, váhy, bias, aktivační funkci a výstup. (převzato z \cite{NNComponentsIMG} pod licencí CC BY-SA 4.0)}
+    \label{fig:nn_components}
+\end{figure}
+
+Základní komponenty neuronových sítí hrají zásadní roli ve funkcionalitě vytvořených modelů. Neurony a vrstvy formují strukturu sítě, zatímco aktivační funkce umožňují modelování nelineárních vztahů, což je nezbytné pro zpracování složitých vzorů a funkcí. Ztrátové funkce poskytují metriku pro hodnocení úspěšnosti sítě v předpovídání a jsou klíčové pro navigaci procesu učení. Optimalizační algoritmy řídí tento učící se proces tím, že iterativně upravují interní parametry sítě, aby se minimalizovala celková ztráta a zvýšila přesnost modelu. Každá z těchto komponent společně zajišťuje, že neuronové sítě se mohou učit efektivně, adaptovat se a poskytovat přesné predikce při řešení zadaných úloh. \cite{CNNConcepts, CNNConcepts2}
+
+\subsubsection{Základy konvolučního zpracování v CNN}
+Jak již bylo zmíněno výše, konvoluční neuronové sítě (CNN) jsou specializovaným druhem neuronových sítí, které se používají především pro zpracování strukturovaných dat, jako jsou například obrazová data. CNN jsou známé svou schopností zachytit prostorové a časové závislosti v obraze pomocí aplikace příslušných filtrů. Úloha konvolučních operací je jádrem toho, co činí CNN tak efektivními pro úlohy, jako je rozpoznávání obrazu, klasifikace obrazu a detekce objektů.
+
+Operace konvoluce zahrnuje posunutí jádra (kernelu) přes vstupní data (obvykle obraz) a výpočet skalárního součinu jádra s překrývajícími se části obrazu. Výsledek tvoří jednu položku ve výstupní mapě příznaků. Tento proces se opakuje posouváním jádra po všech pozicích vstupní matice. Mezi klíčové aspekty konvoluce patří:
+
+\begin{itemize}
+    \item \textbf{Jádro konvoluce} Malé matice používané k detekci specifických prvků, jako jsou hrany nebo textury ve vstupním obraze. Každý filtr je navržen tak, aby zachytil určitý aspekt vstupních dat.
+    \item \textbf{Krok jádra} Počet pixelů, o které posouváme filtr po vstupním obraze. To ovlivňuje velikost výstupní mapy prvků.
+    \item \textbf{Padding} Existuje několik možností, jak umožnit jádru brát v potaz i hraniční prvky. Jednou z možnosti je přidání vrstev nul kolem vstupního obrazu. Další možností je použití zrcadlení (mirror padding), kde se okrajové prvky zrcadlově opakují, což pomáhá jádru zahrnout informace z okrajů obrazu bez ztráty dat.
+    \item \textbf{Mapa příznaků} Výstup operace konvoluce se nazývá mapa příznaků. Představuje odezvu filtru v každé prostorové poloze. Použitím různých filtrů může síť CNN zachytit širokou škálu aspektů vstupního obrazu.
+\end{itemize}
+
+Dalším důležitým konceptem v CNN je poolování, které se obvykle používá po operaci konvoluce. Nejběžnější formou sdružování je tzv. max pooling, kdy výstupem sdružovacího jádra je maximální hodnota z části mapy, kterou pokrývá. Tato operace snižuje dimenzionalitu mapy příznaků a umožňuje síti být odolnou vůči malým změnám vstupního obrazu.
+
+V hlubokých konvolučních neuronových sítích se vrství několik konvolučních a sdružovacích vrstev za sebou, což síti umožňuje učit se hierarchické rysy. Nižší vrstvy se mohou naučit rozpoznávat jednoduché rysy, jako jsou hrany, zatímco hlubší vrstvy mohou interpretovat složité aspekty, jako jsou objekty.
+
+Konvoluce je základní operací v CNN, která umožňuje extrakci smysluplných rysů ze vstupních dat. Díky vrstvení a kombinaci konvolučních, aktivačních a sdružovacích vrstev se CNN mohou efektivně naučit hierarchii rysů, která je klíčová pro zvládání složitých úloh vizuálního rozpoznávání. Každá složka, od výběru filtrů až po použití poolingu, hraje rozhodující roli při definování schopnosti sítě přesně interpretovat a klasifikovat vstupní data. \cite{CNNConcepts, CNNConcepts2}
 
 \subsection{Autoenkodéry v oblasti zpracování obrazu}
 
+
 \subsection{Architektury pro odstranění šumu}
+
 
 \subsection{Přehled a principy}
 
