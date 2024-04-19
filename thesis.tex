@@ -663,13 +663,13 @@ Následující sekce bude zaměřena na nejčastěji využívané architekty neu
 \subsection{Úvod do konvolučních neuronových sítí}
 Neuronové sítě jsou základním stavebním prvkem moderního strojového učení a mají zásadní význam pro rozvoj oblastí jako je zpracování přirozeného jazyka či obrazu, rozpoznávání objektů v obraze, při analýze signálu, v robotice a mnoha jiných důležitých oborech. Tyto systémy jsou inspirovány strukturou a funkcí lidského mozku a jsou navrženy tak, aby modelovaly složité vzory a vztahy v datech. Strukturálně jsou neuronové sítě složeny z vrstev neuronů, což jsou jednotky zpracovávající informace, které jsou propojeny spojeními, ohodnocenými vahami.
 
-\subsubsection{Základní komponenty neuronových sítí}
+\subsubsection{Hlavní komponenty neuronových sítí}
 Základem neuronové sítě je její architektura, která je definována několika klíčovými komponentami. Tyto komponenty jsou základem pro učení a zpracování dat v síti. V následujícím seznamu jsou jednotlivé komponenty podrobněji popsány:
 
 \begin{itemize}
     \item \textbf{Neuron} Neuron v neuronové síti je elementární jednotka, která simuluje chování neuronu v biologických systémech. Přijímá vstup $x = (x_1, x_2, x_3, ..., x_n)$, který je zpracován a následně vrácen na výstupu. Tento výstup je vstupen do dalšího neuronu nebo je součástí koncového výstupu ze sítě.
         \begin{equation}
-            z = Wx + b
+            z = W \cdot x + b
         \end{equation}
         \begin{conditions}
             W & reprezentuje váhy, jenž jsou parametry určující sílu signálu mezi neurony. \\
@@ -715,14 +715,36 @@ V hlubokých konvolučních neuronových sítích se vrství několik konvolučn
 Konvoluce je základní operací v CNN, která umožňuje extrakci smysluplných rysů ze vstupních dat. Díky vrstvení a kombinaci konvolučních, aktivačních a sdružovacích vrstev se CNN mohou efektivně naučit hierarchii rysů, která je klíčová pro zvládání složitých úloh vizuálního rozpoznávání. Každá složka, od výběru filtrů až po použití poolingu, hraje rozhodující roli při definování schopnosti sítě přesně interpretovat a klasifikovat vstupní data. \cite{CNNConcepts, CNNConcepts2}
 
 \subsection{Autoenkodéry v oblasti zpracování obrazu}
+Autoenkodéry jsou samostatnou třídou modelů neuronových sítí určených především k učení efektivního kódování dat. Tyto sítě toho dosahují komprimací vstupu do méně rozměrné reprezentace latentního prostoru a následnou rekonstrukcí výstupu z této komprimované podoby. Tento duální proces kódování a následného dekódování neslouží pouze ke kompresi dat, ale má zásadní význam pro to, aby síť byla nucena upřednostňovat a zachycovat nejvíce informativní rysy dat.
 
+\subsubsection{Struktura autoenkodérů}
+Autoenkodéry se dělí na tři hlavní části:
 
-\subsection{Architektury pro odstranění šumu}
+\begin{itemize}
+    \item \textbf{Enkodér} Proces kódování zahrnuje transformaci vstupních dat s vysokou dimenzí do komprimované podoby. Tento krok je klíčový, protože umožňuje modelu naučit se podstatu dat odfiltrováním šumu a redundance. Tím se síť naučí reprezentaci, která zachycuje základní vzory a struktury nezbytné pro rekonstrukci vstupních dat. Enkodér přebírá vstupní vektor $x$ a převede jej na komprimovanou reprezentaci $z$, často označovaný jako latentní prostor:
+    \begin{equation}
+        z = \sigma(W_e \cdot x + b_e)
+    \end{equation}
+    \begin{conditions}
+        W_e & matice vah enkodéru. \\
+        b_e & bias vektor enkodéru. \\
+        \sigma & nelineární aktivační funkce.
+    \end{conditions}
+    \item \textbf{latentní prostor (bottleneck)} Srdcem autoenkodéru je jeho latentní prostor, v němž jsou vstupní data reprezentována ve své nejkomprimovanější podobě. Tato reprezentace poskytuje pohled na data v nižší dimenzi a zdůrazňuje jejich nejdůležitější atributy. Rozměrnost a konfigurace latentního prostoru jsou velmi důležité a ovlivňují, jak efektivně dokáže autokodér komprimovat a rekonstruovat data.
+    \item \textbf{Dekodér} Proces dekódování se snaží co nejpřesněji rekonstruovat původní vstup z komprimované zakódované reprezentace. V této fázi se testuje kvalita naučených rysů a účinnost kódování. Cílem není dosáhnout dokonalé rekonstrukce, ale spíše vytvořit aproximaci, která zachová nejvýznamnější atributy původních dat. Tato schopnost je užitečná zejména v aplikacích, kde je pochopení základní struktury dat cennější než reprodukce přesné kopie. Dekódovací část rekonstruuje vstupní data $x'$ z latentní reprezentace $z$.
+\end{itemize}
 
-
-\subsection{Přehled a principy}
+Autoenkodéry se používají v celé řadě aplikací, které přesahují rámec prosté komprese dat. Například při redukci šumu se naučí ignorovat náhodné odchylky ve vstupních datech a místo toho se soustředí na rekonstrukci smysluplného základního vzoru obrazu. Používají se také při detekci anomálií, kdy se naučí dobře reprodukovat typické případy dat, ale mají problémy s reprodukcí odlehlých hodnot, a tím identifikují anomální data. V oblasti zpracování obrazu se autoenkodéry také využívají pro segmentaci obrazu a extrakci rysů. Tyto schopnosti jsou klíčové pro rozpoznávání objektů a detailní analýzu obrazového obsahu. \cite{Autoencoders, AutoencodersIntroduction}
 
 \section{Obecné postupy augmentace dat}
+Augmentace dat neboli rozšiřování dat je klíčovou technikou v oblasti strojového učení, zejména v oblastech zpracování obrazu a počítačového vidění. Zahrnuje umělé rozšíření velikosti a rozmanitosti datové sady použitím řady transformací, které jsou aplikovány na vstupní data. Tato sekce se bude zabývat konceptem augmentace dat, důvody použití se zdůrazněním na přínos i omezení při aplikace augmentace a v neposlední řadě budou popsány jedny z nejpoužívanějších technik rozšiřování dat.
+
+\subsection{Augmentace dat}
+
+\subsection{Přínos a omezení při rozšiřování dat}
+
+\subsection{Přehled metod augmentace dat}
+
 
 \chapter{Placeholder}
 
