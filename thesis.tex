@@ -332,7 +332,7 @@ lorem ipsum dolor sit amet
 \addchap{Úvod}
 
 \chapter{Přehled metod předzpracování obrazu}
-V této kapitole se zaměříme na představení klíčových metod předzpracování obrazu, které hrají zásadní roli v procesu analýzy a zpracování rentgenových snímků. Předzpracování obrazu představuje kritický krok v řadě aplikací strojového učení a počítačového vidění, neboť ovlivňuje kvalitu a efektivitu následné analýzy. Metody předzpracování obrazu mohou výrazně zlepšit kvalitu dat a zvýšit přesnost detekce objektů, segmentace obrazu či klasifikace. Specifický výběr těchto technik je klíčový pro zjištění přesnosti a efektivity moderních metod počítačového vidění, včetně strojového učení a hlubokého učení, které jsou stále častěji aplikovány na širokou škálu problémů v oblasti zpracování obrazu. Zejména v kontextu rentgenových snímků může předzpracování pomoci překonat některé běžné výzvy, jako je nízký kontrast, šum, nebo artefakty, které mohou snížit kvalitu obrazu a tím ovlivnit diagnózu nebo automatickou analýzu.\cite{ImportanceOfImageProcessing}
+Tato kapitola bude zaměřena na představení klíčových metod předzpracování obrazu, které hrají zásadní roli v procesu analýzy a zpracování rentgenových snímků. Předzpracování obrazu představuje kritický krok v řadě aplikací strojového učení a počítačového vidění, neboť ovlivňuje kvalitu a efektivitu následné analýzy. Metody předzpracování obrazu mohou výrazně zlepšit kvalitu dat a zvýšit přesnost detekce objektů, segmentace obrazu či klasifikace. Specifický výběr těchto technik je klíčový pro zjištění přesnosti a efektivity moderních metod počítačového vidění, včetně strojového učení a hlubokého učení, které jsou stále častěji aplikovány na širokou škálu problémů v oblasti zpracování obrazu. Zejména v kontextu rentgenových snímků může předzpracování pomoci překonat některé běžné výzvy, jako je nízký kontrast, šum, nebo artefakty, které mohou snížit kvalitu obrazu a tím ovlivnit diagnózu nebo automatickou analýzu.\cite{ImportanceOfImageProcessing}
 
 \section{Klasické metody předzpracování obrazu}
 Následující sekce se zabývá představením klasických metod a technik, které jsou využívány pro úpravu a zlepšení kvality obrazových dat před jejich dalším zpracováním. Budeme se tedy věnovat různým přístupům filtrace obrazu, metodám redukce šumu či zaostření obrazu a také technikám prahování a binarizace, které jsou fundamentální pro analýzu a interpretaci obrazových dat. Přestože se jedná o metody, které mohou být považovány za základní, jejich správná aplikace a kombinace mohou výrazně zlepšit výslednou kvalitu obrazu a přispět k efektivnějšímu rozpoznávání vzorů a objektů v obrazových datech. Podrobně prozkoumáme každou z těchto metod, přičemž budeme klást důraz na jejich význam pro přípravu dat k dalšímu zpracování.
@@ -781,9 +781,54 @@ Transformace na úrovni pixelů zahrnují různé operace, které ovlivňují in
 Další techniky augmentace dat zahrnují ořezávání obrazu, které se provádí oříznutím náhodných obdélníkových oblastí v obraze. Tato metoda není jen o redukci velikosti a tvarů obrázků, ale jedná se o strategii, která nutí modely rozpoznat a rekonstruovat chybějící části, čímž se zlepšuje jejich schopnost generalizace. Náhodné ořezávání může modelům pomoci lépe se zaměřit na důležité části obrazu a zlepšit jejich detekční a klasifikační schopnosti tím, že je vyzývá k identifikaci a doplnění chybějících informací. Tato technika je zvláště účinná pro zvýšení odolnosti modelu vůči částečně zakrytým nebo neúplným vstupům, což je běžné v reálných scénářích, kde nemusí být objekty zcela viditelné. \cite{AugmentationSurvey}
 
 \chapter{Měření vlivu předzpracování obrazu na výkonost neuronové sítě U-NET}
+V oblasti zpracování rentgenových snímků je výkon modelů hlubokého učení výrazně ovlivněn kvalitou a množstvím dat, na kterých jsou tyto modely trénovány. Následující kapitola se bude zabývat vlivem předzpracování rentgenových snímků a augmentace dat na účinnost segmentace pomocí modelů sítě U-Net jak pro binární, tak pro vícetřídní úlohy.
+
+Kroky předzpracování, jako je normalizace, změna velikosti a odstraňování šumu, jsou zásadní pro zlepšení kvality vstupních dat a jejich přípravu pro trénování neuronových sítí. Augmentace dat, zahrnující techniky jako rotace, překlápění a škálování, dále rozšiřuje datovou sadu a umožňuje modelům lépe se zobecnit učením se z různých variací vstupních dat. Dále bude v kapitole prozkoumáno použití pokročilých neuronových sítí, detaily tréninkových a validačních procesů U-Net a metodologie použité k měření dopadu těchto technik. Výsledky z těchto experimentů jsou poté analyzovány, aby poskytly přehled o optimalizaci modelů U-Net pro lepší segmentační výkon v medicínských obrazových úlohách.
+
+\section{Datové sady a jejich rozbor}
+V této sekci budou představeny datové sady, na kterých bude měřen vliv předzpracování a augmentace dat na výkonnost modelů U-Net pro segmentaci lékařských rentgenových snímků. Pro účely této práce jsem zvolil dvě různé datové sady: jednu pro segmentaci plic a druhou pro segmentaci zubů. Tyto datové sady jsem vybral na základě jejich relevance pro typické úlohy lékařského pozorování a jejich různé úrovně obtížnosti, což umožňuje komplexně vyhodnotit robustnost a účinnost navržených technik pro předzpracování obrazu.
+
+\subsection{Datová sada pro segmentaci plic}
+Tato datová sada je složena ze dvou různých zdrojů, z nichž každá přispívá svou jedinečností a obohacuje tak celkovou různorodost dat.
+
+\begin{itemize}
+    \item \textbf{První zdroj:} obsahuje 800 rentgenů hrudníku ve velmi vysoké kvalitě včetně odpovídajících segmentačních masek. Obrázky jsou dobře anotovány a poskytují jasné a přesné zobrazení plic, což je ideální pro přesnou segmentaci. Tato datová sada je dostupná na stránkách \href{https://www.kaggle.com/datasets/nikhilpandey360/chest-xray-masks-and-labels}{Kaggle} \footnote{Pro více informací k datové sadě viz také články \cite{LungDatasetNeeded, LungDatasetNeeded2}.}."
+    \item \textbf{Druhý zdroj:} zahrnuje přes 6 000 rentgenů hrudníku v nižší kvalitě ve srovnání s prvním zdrojem. Navzdory snížené kvalitě obrázků jsou tyto snímky stále vhodné pro úlohy segmentace plic a významně zvyšují velikost datové sady, čímž poskytují rozmanitější tréninková data. Tato datová sada je dostupná na stránkách \href{https://data.mendeley.com/datasets/8gf9vpkhgy/1}{Mendeley}. \cite{LungDataset2}
+\end{itemize}
+
+Spojením těchto dvou datových sad bude docíleno rozmanitosti snímků využitím jak velmi kvalitních z první sady, tak méně kvalitních z druhé datové sady. Tím bude umožněno modelům sítě U-Net se přizpůsobit i na nečekané vstupy a zvýší se jejich schopnost generalizace. Vytvoříme tak komplexní datovou sadu, která bude efektivně sloužit k trénování a validaci U-Net modelů. Celkově se bude v sadě nacházet 5000 vybraných snímků hrudníku s přiloženými segmentačními maskami.
+
+\subsection{Datová sada pro segmentaci zubů}
+Jelikož je segmentace plic jednoduchý binární problém, bylo nutné zvolit si i složitější úlohu pro správně posouzení dopadu předzpracování a augmentace dat na síť U-Net. Vzhledem k mým předchozím zkušenostem a vysoké náročnosti segmentace jsem si jako další datovou sadu zvolil rentgenové snímky zubů.
+
+\subsubsection{Náročnost segmentace zubů}
+Segmentace zubů je velmi nárnočný problém z několika důvodů:
+
+\begin{itemize}
+    \item Jedná se o vícetřídní segmentaci, neboť je nutné segmentovat až 32 různých zubů (v případě anomálií i více).
+    \item Zuby mohou mít velmi různorodé tvary a nemusí být vždy dobře viditelné.
+    \item Zuby postihují různá onemocnění, která mění jejich tvar nebo nebo způsobují jejich ztrátu. Je nutné taková onemocnění léčit například opravou zubů ve formě výplní, umělých korunek, endodoncie, rovnátek aj.
+\end{itemize}
+
+Všechny tyto faktory přidávají další variabilitu a složitost pro trénovaný model. Právě z těchto důvodů by měl být velmi patrný vliv předzpracování a augmentace na trénování a výkonnost modelů.
+
+\subsubsection{Popis datové sady}
+Datová sada zahrnuje téměř 600 rentgenových snímků zubů. Tyto snímky jsou v nižší kvalitě ve srovnání s rentgeny plic. Snímky jsou anotovány jak pro dětské, tak i pro dospělé zuby, přičemž je použito stejné označení pro oba typy zubů, tedy například dospělý zub 11 má stejnou značku jako dětský zub 11. I když toto označení není ideální, pro naše účely nepředstavuje problém.
+
+Pro lepší orientaci je ústní dutina rozdělena do čtyř kvadrantů a zuby jsou označeny ve směru hodinových ručiček následovně: 18, až 11, 21, až 28, 48, až 41, 31, až 38 // TODO: lépe napsat a dát obrázek. Toto označení zahrnuje všechny hlavní zuby, což usnadňuje přesné a konzistentní anotování.
+
+Tato datová sada je dostupná na stránkách \href{https://www.kaggle.com/datasets/humansintheloop/teeth-segmentation-on-dental-x-ray-images}{Kaggle}. \cite{TeethDataset}
+
+\subsection{}
 
 
-% \section{Popis úlohy}
+
+\subsection{}
+
+
+
+\subsection{}
+
 
 % \section{Načtení a transformace dat}
 
