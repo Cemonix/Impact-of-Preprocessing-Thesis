@@ -76,42 +76,29 @@
     breaklines=true,
 }
 
-% ukázka pro nastavení balíku listings pro sazbu ukázek zdrojových kódů
-\lstset{
-  language=Python,                % the language of the code
-  basicstyle=\small\ttfamily,    
-  backgroundcolor=\color{white},   % choose the background color. You must add \usepackage{color}
-  showspaces=false,                % show spaces adding particular underscores
-  showstringspaces=true,           % underline spaces within strings
-  showtabs=false,                  % show tabs within strings adding particular underscores
-  frame=single,                    % adds a frame around the code
-  tabsize=3,                       % sets default tabsize to 2 spaces
-  breaklines=true,                 % sets automatic line breaking
-  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
-  keywordstyle=\bfseries,          % keyword style
-  commentstyle=\rmfamily,       % comment style
-  stringstyle=\itshape\color,   % string literal style
-}
-
-\definecolor{bluekeywords}{rgb}{0.13,0.13,1}
-\definecolor{greencomments}{rgb}{0,0.5,0}
-\definecolor{redstrings}{rgb}{0.9,0,0}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
 
 \lstset{
-    language=[Sharp]C,
-    showspaces=false,
-    showtabs=false,
-    breaklines=true,
-    frame=single,
-    tabsize=3,
-    showstringspaces=false,
-    breakatwhitespace=true,
-    escapeinside={(*@}{@*)},
-    commentstyle=\color{greencomments},
-    keywordstyle=\color{bluekeywords}\bfseries,
-    stringstyle=\color{redstrings},
+    language=Python,
+    backgroundcolor=\color{backcolour},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
     basicstyle=\small\ttfamily,
-    numbers=left
+    showspaces=false, 
+    showstringspaces=false, 
+    showtabs=false,
+    frame=tb, 
+    tabsize=3, 
+    breaklines=true,
+    breakatwhitespace=false, 
+    numbers=left,
+    extendedchars=true,
+    inputencoding=utf8,
+    escapeinside={(*}{*)},
 }
 
 % sazba matematických výrazů
@@ -813,24 +800,80 @@ Segmentace zubů je velmi nárnočný problém z několika důvodů:
 Všechny tyto faktory přidávají další variabilitu a složitost pro trénovaný model. Právě z těchto důvodů by měl být velmi patrný vliv předzpracování a augmentace na trénování a výkonnost modelů.
 
 \subsubsection{Popis datové sady}
-Datová sada zahrnuje téměř 600 rentgenových snímků zubů. Tyto snímky jsou v nižší kvalitě ve srovnání s rentgeny plic. Snímky jsou anotovány jak pro dětské, tak i pro dospělé zuby, přičemž je použito stejné označení pro oba typy zubů, tedy například dospělý zub 11 má stejnou značku jako dětský zub 11. I když toto označení není ideální, pro naše účely nepředstavuje problém.
+Datová sada zahrnuje téměř 600 rentgenových snímků zubů, z čehoz bude použito 500 vybraných snímků s jejich segmentačními maskami. Tyto snímky jsou v nižší kvalitě ve srovnání s rentgeny plic. Snímky jsou anotovány jak pro dětské, tak i pro dospělé zuby, přičemž je použito stejné označení pro oba typy zubů, tedy například dospělý zub 11 má stejnou značku jako dětský zub 11. I když toto označení není ideální, pro naše účely nepředstavuje problém.
 
 Pro lepší orientaci je ústní dutina rozdělena do čtyř kvadrantů a zuby jsou označeny ve směru hodinových ručiček následovně: 18, až 11, 21, až 28, 48, až 41, 31, až 38 // TODO: lépe napsat a dát obrázek. Toto označení zahrnuje všechny hlavní zuby, což usnadňuje přesné a konzistentní anotování.
 
 Tato datová sada je dostupná na stránkách \href{https://www.kaggle.com/datasets/humansintheloop/teeth-segmentation-on-dental-x-ray-images}{Kaggle}. \cite{TeethDataset}
 
-\subsection{}
+\subsection{Aplikace šumu na snímky v datové sadě}
+Následující sekce je soustředěna na přidávání šumu do snímků ve vytvořené datové sadě, aby bylo možné vytvořit trénovací a validační sady pro vyhodnocování algoritmů pro redukci šumu. V první kapitole byly popsány nejčastěji se vyskytující typy šumu ve snímcích. V této práci se zaměřím na redukci tří nejčastějších typů šumů v retgenových snímcích: speckle šum, impulzní šum a šum soli a pepře \cite{MostCommonNoises}.
 
+Ve vytvořené datové sadě se nachází 5000 rentgenů hrudníku a 500 rentgenů zubů. Na snímky budou aplikovány zmíněné typy šumů následovně:
 
+\begin{table}[H]
+    \caption{Detailní popis aplikace šumu na snímky v datové sadě}
+    \label{table:noiseTypes}
+    \begin{tabular}{@{}ll@{}}
+        \textbf{Část datasetu (\%)} & \textbf{Typ aplikovaného šumu} \\
+        0-20   & Na snímky v tomto rozsahu bude aplikován šum typu speckle. \\
+        20-40  & Další část bude ovlivněna typem šumu soli a pepře. \\
+        40-60  & Tento rozsah bude zašuměn impulzním šumem. \\
+        60-80  & Zde bude aplikována náhodná kombinace dvou typů šumů. \\
+        80-100 & Poslední část snímků bude narušena kombinací všech tří zmíněných šumů. \\ 
+               & Tyto snímky budou představovat největší míru komplexity šumu. \\
+    \end{tabular}
+\end{table}
 
-\subsection{}
+Tento postup umožňuje vytvoření různých úrovní obtížnosti při odstraňování šumu, což je klíčové pro vývoj a vyhodnocení robustních modelů pro redukci šumu.
 
+Nejprve jsem aplikoval jednotlivé typy šumů samostatně na části datasetu (první tři řádky v tabulce \ref{table:noiseTypes}), což vytváří relativně jednoduše odstranitelné šumové artefakty. Tímto způsobem můžu zhodnotit základní schopnosti algoritmů pro redukci šumu efektivně odstraňovat každý typ šumu zvlášť. Čtvrtý řádek v tabulce \ref{table:noiseTypes} představuje střední úroveň obtížnosti. Tento krok testuje algoritmy v situacích, kde musí řešit více šumových podmínek současně, což simuluje složitější a realističtější scénáře, jaké mohou nastat v praxi. Poslední řádek tabulky \ref{table:noiseTypes} simuluje nejnáročnější scénáře pro vytvořené algoritmy, které musí být schopny odstranit kombinaci různých typů šumů. Tyto snímky jsou klíčové pro testování a vývoj velmi robustních modelů, které mohou efektivně fungovat v nejrůznějších reálných situacích.
 
+Tento stratifikovaný přístup k aplikaci šumu nejen zajišťuje důkladné testování algoritmů pro redukci šumu ve snímcích, ale také pomáhá při vývoji a ladění modelů, které jsou schopny se přizpůsobit různým úrovním šumové zátěže. Tímto způsobem dosáhnu komplexního hodnocení a vývoje efektivních technik pro zpracování rentgenových snímků v různých podmínkách.
 
-\subsection{}
+\subsubsection{Měření hodnoty šumu ve snímcích}
+Pro aplikaci šumu na snímky jsem využil knihovnu \texttt{numpy} \cite{Numpy}, se kterou jsem implementoval funkce pro přidání speckle šumu, šumu soli a pepře a Poissonova šumu. Hlavním parametrem těchto funkcí pro regulaci šumu je nastavení intenzity, nikoli nastavení směrodatné odchylky (std). Abych mohl porovnat úroveň šumu ve snímcích, naprogramoval jsem funkci pro odhad směrodatné odchylky šumu ve snímku.
 
+Pro aplikaci šumu na snímky jsem využil knihovnu \texttt{numpy}, se kterou jsem implementoval funkce pro přidání speckle šumu, šumu soli a pepře a Poissonova šumu. Hlavním parametrem těchto funkcí je intenzita šumu, nikoli jeho směrodatná odchylka (std). Použití intenzity jako parametru je praktické pro aplikaci různých úrovní šumu, ale pro analýzu a srovnání je často nutné znát skutečnou směrodatnou odchylku šumu v obraze. Proto jsem vyvinul následující funkci, která odhaduje směrodatnou odchylku šumu v obraze pomocí extrakce segmentů (anglicky "patches") a analýzy hlavních komponent (PCA). Následující kód ukazuje implementaci zmíněné funkce\footnote{Kompletní implementace funkcí pro přidání šumu lze nalézt v GitHub repozitáři této práce.}.
 
-% \section{Načtení a transformace dat}
+\begin{lstlisting}[language=Python, caption={Funkce pro odhad směrodatné odchylky šumu ve snímku}, label={lst:noise_estimation}]
+import numpy as np
+from sklearn.feature_extraction.image import extract_patches_2d
+from sklearn.decomposition import PCA
+from typing import Tuple
+
+def estimate_noise_in_image(
+    image: np.ndarray, patch_size: Tuple[int, int] = (7, 7), num_patches: int = 1000,
+    lower_percentile: float = 0.1, upper_percentile: float = 0.2
+) -> tuple:
+    (*\# Extrahuje segmenty *)
+    patches = extract_patches_2d(image, patch_size, max_patches=num_patches)
+    
+    (*\# Přetvoří segmenty na 2D pole, kde každý řádek je segment *)
+    patches = patches.reshape(patches.shape[0], -1).astype(np.float32)
+    
+    (*\# Odebere průměr *)
+    patches -= np.mean(patches, axis=1, keepdims=True)
+    
+    (*\# PCA pro nalezení vlastních čísel *)
+    pca = PCA(n_components=patch_size[0]*patch_size[1])
+    pca.fit(patches)
+    
+    (*\# Vypočítá indexy pro požadovaný percentilní v rozsahu vlastních čísel *)
+    lower_index = int(lower_percentile * len(pca.explained_variance_))
+    upper_index = int(upper_percentile * len(pca.explained_variance_))
+    
+    (*\# Medián vlastních čísel ve specifikovaném percentilním rozsahu *)
+    noise_variance = np.median(pca.explained_variance_[lower_index:upper_index])
+    
+    return np.sqrt(pca.explained_variance_), np.sqrt(noise_variance)
+\end{lstlisting}
+
+Tato funkce mi umožňuje kvantifikovat a porovnávat úrovně šumu a pomocí těchto odhadů mohu lépe analyzovat výkon algoritmů na různých úrovních šumu.
+
+\section{Návrh metod vhodných pro předzpracování rentgenových snímků }
+V této části se budu zabývat implementací různých standardních metod používaných pro odstranění šumu a zlepšení kvality obrazu. Zatímco teoretické pozadí a principy těchto metod byly popsány v teoretické části této práce, následující část se zaměřuje na praktické aspekty jejich implementace, včetně jakýchkoliv dalších algoritmů, které dosud nebyly zmíněny. Dále vysvětlím použití tzv. Ensemble Averaging postupu, který napomáhá ke zlepšení robustnosti algoritmů pro redukci šumu.
+
 
 % \section{Vizualizace dat}
 
@@ -845,6 +888,8 @@ Tato datová sada je dostupná na stránkách \href{https://www.kaggle.com/datas
 \printbibliography[title=Seznam použitých zdrojů]
 
 \listoffigures
+
+\listoftables
 
 \lstlistoflistings
 
