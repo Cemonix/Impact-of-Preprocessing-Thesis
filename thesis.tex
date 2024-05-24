@@ -654,7 +654,7 @@ Neuronové sítě jsou základním stavebním prvkem moderního strojového uče
 Základem neuronové sítě je její architektura, která je definována několika klíčovými komponentami. Tyto komponenty jsou základem pro učení a zpracování dat v síti. V následujícím seznamu jsou jednotlivé komponenty podrobněji popsány:
 
 \begin{itemize}
-    \item \textbf{Neuron} Neuron v neuronové síti je elementární jednotka, která simuluje chování neuronu v biologických systémech. Přijímá vstup $x = (x_1, x_2, x_3, ..., x_n)$, který je zpracován a následně vrácen na výstupu. Tento výstup je vstupen do dalšího neuronu nebo je součástí koncového výstupu ze sítě.
+    \item \textbf{Neuron} je elementární jednotka v neuronové síti, která simuluje chování neuronu v biologických systémech. Přijímá vstup $x = (x_1, x_2, x_3, ..., x_n)$, který je zpracován a následně vrácen na výstupu. Tento výstup je vstupen do dalšího neuronu nebo je součástí koncového výstupu ze sítě.
         \begin{equation}
             z = W \cdot x + b
         \end{equation}
@@ -662,15 +662,15 @@ Základem neuronové sítě je její architektura, která je definována několi
             W & reprezentuje váhy, jenž jsou parametry určující sílu signálu mezi neurony. \\
             b & bias, což je parametr posunutí, který upravuje výstup neuronu před aplikací aktivační funkce.
         \end{conditions}
-    \item \textbf{Vrstvy (Layers)} Vrstvy se skládají z neuronů a jsou základem architektury neuronové sítě. Každá vrstva plní specifickou funkci v procesu učení. Vrstvy mohou být kategorizovány do tří typů:
+    \item \textbf{Vrstvy (Layers)} se skládají z neuronů a jsou základem architektury neuronové sítě. Každá vrstva plní specifickou funkci v procesu učení. Vrstvy mohou být kategorizovány do tří typů:
         \begin{itemize}
-            \item \textbf{Vstupní vrstva (Input layer)} Tato vrstva přijímá surová data a připravuje je pro další zpracování v síti. Každý neuron této vrstvy přímo reprezentuje jednu vlastnost vstupního datového vektoru.
-            \item \textbf{Skyté vrstvy (Hidden layers)} Skryté vrstvy jsou mezi vstupní a výstupní vrstvou a jejich úkolem je zpracování signálů přijatých od vstupní vrstvy. Komplexnost a hloubka těchto vrstev jsou klíčové pro schopnost sítě učit se složité vzory.
-            \item \textbf{Výstupní vrsta (Output layer) } Poslední výstupní vrstva generuje predikce určené neuronovou sítí. Například v klasifikačních úlohách může tato vrstva používat softmax funkci\footnote{Softmax funkce se často používá jako aktivační funkce v poslední vrstvě neuronové sítě při klasifikačních úlohách. Tato funkce převádí výstupní hodnoty neuronů na pravděpodobnostní rozdělení mezi různými třídami. Matematický vzorec pro softmax funkci je definován následovně: $\text{softmax}(z_i) = \frac{e^{z_i}}{\sum_{j=1}^{N} e^{z_j}}$}.
+            \item \textbf{Vstupní vrstva (Input layer)} přijímá surová data a připravuje je pro další zpracování v síti. Každý neuron této vrstvy přímo reprezentuje jednu vlastnost vstupního datového vektoru.
+            \item \textbf{Skyté vrstvy (Hidden layers)} jsou mezi vstupní a výstupní vrstvou a jejich úkolem je zpracování signálů přijatých od vstupní vrstvy. Komplexnost a hloubka těchto vrstev jsou klíčové pro schopnost sítě učit se složité vzory.
+            \item \textbf{Výstupní vrsta (Output layer) } je poslední vrstva, která generuje predikce určené neuronovou sítí. Například v klasifikačních úlohách může tato vrstva používat softmax funkci\footnote{Softmax funkce se často používá jako aktivační funkce v poslední vrstvě neuronové sítě při klasifikačních úlohách. Tato funkce převádí výstupní hodnoty neuronů na pravděpodobnostní rozdělení mezi různými třídami. Matematický vzorec pro softmax funkci je definován následovně: $\text{softmax}(z_i) = \frac{e^{z_i}}{\sum_{j=1}^{N} e^{z_j}}$}.
         \end{itemize}
-    \item \textbf{Aktivační funkce (Activation function)} Aktivační funkce je důležitou složkou neuronových sítí, která umožňuje modelování nelineárních vztahů. Funkce, jako je sigmoid, tanh a ReLU (Rectified Linear Unit), jsou běžně používány k výpočtu výstupu z neuronů na základě vstupu a vah. Například, ReLU, která je definována jako $ReLU(x) = max(0, x)$, je populární pro svou schopnost rychle konvergovat během tréninku a minimalizovat problém mizejících gradientů\footnote{Mizející gradienty jsou problém, kdy gradient ztrátové funkce klesá exponenciálně rychle s každou vrstvou v síti, což způsobuje, že váhy v raných vrstvách se téměř neaktualizují. Tento jev výrazně zpomaluje trénink a může způsobit, že síť nedokáže efektivně učit složité vzory.}.
-    \item \textbf{Ztrátová funkce (Loss function)} Ztrátová funkce, někdy nazývaná penalizační funkce, poskytuje kvantitativní hodnocení toho, jak daleko jsou predikce neuronové sítě od skutečných hodnot. Během tréninku neuronové sítě je hlavním cílem minimalizace této funkce. Mezi běžné ztrátové funkce se řadí střední kvadratická chyba (MSE) pro regresní úkoly a cross-entropy pro klasifikační úkoly. 
-    \item \textbf{Optimalizační algoritmus (Optimizer)} Optimalizační algoritmy jsou základem učení neuronových sítí, protože určují, jak se síť učí z dat tím, že iterativně upravují váhy a biasy k minimalizaci ztrátové funkce. Stochastic Gradient Descent (SGD) provádí tuto úpravu tak, že v každém kroku tréninku náhodně vybere vzorek dat a spočítá gradient ztrátové funkce pouze na základě tohoto vzorku:
+    \item \textbf{Aktivační funkce (Activation function)} je důležitou složkou neuronových sítí, která umožňuje modelování nelineárních vztahů. Funkce, jako je sigmoid, tanh a ReLU (Rectified Linear Unit), jsou běžně používány k výpočtu výstupu z neuronů na základě vstupu a vah. Například, ReLU, která je definována jako $ReLU(x) = max(0, x)$, je populární pro svou schopnost rychle konvergovat během tréninku a minimalizovat problém mizejících gradientů\footnote{Mizející gradienty jsou problém, kdy gradient ztrátové funkce klesá exponenciálně rychle s každou vrstvou v síti, což způsobuje, že váhy v raných vrstvách se téměř neaktualizují. Tento jev výrazně zpomaluje trénink a může způsobit, že síť nedokáže efektivně učit složité vzory.}.
+    \item \textbf{Ztrátová funkce (Loss function)}, někdy nazývaná penalizační funkce, poskytuje kvantitativní hodnocení toho, jak daleko jsou predikce neuronové sítě od skutečných hodnot. Během tréninku neuronové sítě je hlavním cílem minimalizace této funkce. Mezi běžné ztrátové funkce se řadí střední kvadratická chyba (MSE) pro regresní úkoly a cross-entropy pro klasifikační úkoly. 
+    \item \textbf{Optimalizační algoritmus (Optimizer)} je základem učení neuronových sítí, protože určují, jak se síť učí z dat tím, že iterativně upravují váhy a biasy k minimalizaci ztrátové funkce. Stochastic Gradient Descent (SGD) provádí tuto úpravu tak, že v každém kroku tréninku náhodně vybere vzorek dat a spočítá gradient ztrátové funkce pouze na základě tohoto vzorku:
     Adam a RMSprop jsou pokročilejší varianty, které se snaží zlepšit konvergenci SGD tím, že upravují rychlost učení pro každý parametr individuálně, což může vést k rychlejšímu a stabilnějšímu učení, zejména v komplexních sítích.
 \end{itemize}
 
@@ -807,7 +807,7 @@ Pro lepší orientaci je ústní dutina rozdělena do čtyř kvadrantů a zuby j
 Tato datová sada je dostupná na stránkách \href{https://www.kaggle.com/datasets/humansintheloop/teeth-segmentation-on-dental-x-ray-images}{Kaggle}. \cite{TeethDataset}
 
 \subsection{Aplikace šumu na snímky v datové sadě}
-Následující sekce je soustředěna na přidávání šumu do snímků ve vytvořené datové sadě, aby bylo možné vytvořit trénovací a validační sady pro vyhodnocování algoritmů pro redukci šumu. V první kapitole byly popsány nejčastěji se vyskytující typy šumu ve snímcích. V této práci se zaměřím na redukci tří nejčastějších typů šumů v retgenových snímcích: speckle šum, impulzní šum a šum soli a pepře \cite{MostCommonNoises}.
+Následující sekce je soustředěna na přidávání šumu do snímků ve vytvořené datové sadě, aby bylo možné vytvořit trénovací a validační sady pro vyhodnocování algoritmů pro redukci šumu. V první kapitole byly popsány nejčastěji se vyskytující typy šumu ve snímcích. V této práci se zaměřím na redukci tří nejčastějších typů šumů v retgenových snímcích: speckle šum, impulzní šum a Poissonův šum \cite{MostCommonNoises}.
 
 Ve vytvořené datové sadě se nachází 5000 rentgenů hrudníku a 500 rentgenů zubů. Na snímky budou aplikovány zmíněné typy šumů následovně:
 
@@ -818,7 +818,7 @@ Ve vytvořené datové sadě se nachází 5000 rentgenů hrudníku a 500 rentgen
         \textbf{Část datasetu (\%)} & \textbf{Typ aplikovaného šumu} \\
         0-20   & Na snímky v tomto rozsahu bude aplikován šum typu speckle. \\
         20-40  & Další část bude ovlivněna typem šumu soli a pepře. \\
-        40-60  & Tento rozsah bude zašuměn impulzním šumem. \\
+        40-60  & Tento rozsah bude zašuměn Poissonův šumem. \\
         60-80  & Zde bude aplikována náhodná kombinace dvou typů šumů. \\
         80-100 & Poslední část snímků bude narušena kombinací všech tří zmíněných šumů. \\ 
                & Tyto snímky budou představovat největší míru komplexity šumu. \\
