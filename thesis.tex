@@ -871,11 +871,130 @@ def estimate_noise_in_image(
 
 Tato funkce mi umožňuje kvantifikovat a porovnávat úrovně šumu a pomocí těchto odhadů mohu lépe analyzovat výkon algoritmů na různých úrovních šumu.
 
-\section{Návrh metod vhodných pro předzpracování rentgenových snímků }
+\section{Návrh metod vhodných pro předzpracování rentgenových snímků}
 V této části se budu zabývat implementací různých standardních metod používaných pro odstranění šumu a zlepšení kvality obrazu. Zatímco teoretické pozadí a principy těchto metod byly popsány v teoretické části této práce, následující část se zaměřuje na praktické aspekty jejich implementace, včetně jakýchkoliv dalších algoritmů, které dosud nebyly zmíněny. Dále vysvětlím použití tzv. Ensemble Averaging postupu, který napomáhá ke zlepšení robustnosti algoritmů pro redukci šumu.
 
+\subsubsection{Vybrané metody a jejich implementace}
+V této práci jsem se zaměřil na implementaci vybraných standardních metod pro odstranění šumu a zvýšení kvality obrazu. V následujícím seznamu jsou uvedeny použité metody spolu s jejich krátkým popisem: 
 
-% \section{Vizualizace dat}
+\begin{itemize}
+    \item \textbf{CLAHE:} Zvyšuje lokální kontrast a zabraňuje nadměrnému zesílení šumu.
+    \item \textbf{Mediánový Filtr:} Odstraňuje impulzní šum nahrazením každého pixelu mediánem jeho okolí.
+    \item \textbf{Bilaterální Filtr:} Zachovává hrany při redukci šumu zohledněním prostorových i intenzitních rozdílů.
+    \item \textbf{Filtr ne-lokálních průměrů:} Redukuje šum průměrováním podobných segmentů v celém obraze.
+    \item \textbf{Lokálně adaptivní mediánový filtr:} Adaptivní medianový filtr, který přizpůsobuje prahovou hodnotu šumu na základě místní variance.
+    \item \textbf{Redukce šumu pomocí waveletové transformace:} Rozkládá obraz na waveletové koeficienty a odstraňuje šum pomocí prahování.
+\end{itemize}
+
+Většina uvedených metod byla implementována s využitím knihoven \texttt{scipy} \cite{scipy} a \texttt{skimage} \cite{scikit}, které poskytují optimalizované a efektivní řešení. Vzhledem k tomu, že dataset obsahuje 5500 snímků, je výpočetní efektivita klíčová pro zpracování v rozumném čase.
+
+Některé z metod nebyly ve zmíněných knihovnách dostupné, bylo proto nutné je implementovat svépomocí. Jedná se o adaptivní medianový filtr a Frost filtr. Tyto metody jsem se snažil navrhnout tak, aby byly efektivní a rychlé, zejména Frost filtr bylo nutné implementovat s využitím knihovny \texttt{numba} \cite{numba}, která umožňuje provádět náročné výpočty na grafické kartě, což výrazně zrychlilo zpracování. Níže je uveden příklad implementace Frostova filtru:
+
+\begin{lstlisting}[language=Python, caption={Implementace Frost filtru s využitím Numba CUDA}, label={lst:frost_filter}]
+    @numba.jit(nopython=True)
+    def __compute_weights(
+        patch: npt.NDArray, N: int, initial_K: float, local_mean: np.float64, local_std: np.float64
+    ) -> npt.NDArray[np.float64]:
+        center_pixel = patch[N, N]
+        T_t0 = np.abs(center_pixel - local_mean) / local_std if local_std != 0 else 0
+        weights = np.zeros_like(patch)
+    
+        for i in range(patch.shape[0]):
+            for j in range(patch.shape[1]):
+                current_pixel = patch[i, j]
+                numerator = np.abs(current_pixel - center_pixel)
+                abs_diffs = np.abs(patch - center_pixel)
+                abs_diffs[N, N] = 0  # Exclude the center pixel from the sum
+                total_pixels = (2 * N + 1) ** 2 - 1
+                denominator = np.sum(abs_diffs) / total_pixels
+                Q_sh = numerator / denominator if denominator != 0 else 0
+                K = initial_K * T_t0 * Q_sh
+                d_sh = np.sqrt((i - N) ** 2 + (j - N) ** 2)
+                weights[i, j] = np.exp(-K * d_sh)
+        
+        return weights
+    
+    
+    def apply_frost_filter(
+        image: npt.NDArray, window_size: int = 3, initial_K: float = 1.0
+    ) -> npt.NDArray:
+        def adaptive_kernel(patch: npt.NDArray) -> np.float64:
+            patch = patch.reshape(window_size, window_size)
+            N = window_size // 2
+            local_mean = np.mean(patch)
+            local_std = np.std(patch)
+            weights = __compute_weights(patch, N, initial_K, local_mean, local_std)
+            weights /= np.sum(weights)
+            return np.sum(weights * patch)
+    
+        filtered_image = generic_filter(image, adaptive_kernel, size=(window_size, window_size))
+        filtered_image_uint8 = np.clip(filtered_image, 0, 255).astype(np.uint8)
+        return filtered_image_uint8
+\end{lstlisting}
+
+\subsubsection{Výzvy a úskalí standardních metod}
+Standardní metody pro odstranění šumu mají několik omezení, která mohou ovlivnit jejich účinnost v reálných aplikacích. Tato omezení jsou důležitá pro pochopení, proč samotné použití těchto metod nemusí být vždy dostatečné a proč je třeba hledat pokročilejší přístupy.
+
+Většina standardních metod je navržena tak, aby se zaměřovala na specifické typy šumu. Například mediánový filtr je efektivní pro odstranění impulzního šumu, ale nemusí být účinný proti jiným typům. Toto zaměření na specifické typy šumu znamená, že pokud není typ šumu v obraze znám, může být obtížné vybrat správnou metodu pro jeho odstranění. V reálných aplikacích často není možné předem určit, jaký typ šumu bude v obraze přítomen, což výrazně omezuje účinnost těchto metod.
+
+Dalším problémem je přítomnost více typů šumu současně v jednom obraze. Například, lékařské snímky mohou obsahovat kombinaci šumu typu speckle, Poissonova šumu a dalších artefaktů. Standardní metody, které jsou navrženy pro odstranění jednoho typu šumu, nemusí být schopny efektivně zvládnout takovou kombinaci. Použití jedné metody může zlepšit jednu část obrazu, ale zároveň zhoršit jinou.
+
+Tento problém kombinace šumů vede k potřebě metod, které jsou schopny efektivně řešit více typů šumu současně, nebo metod, které kombinují výstupy různých filtrů pro dosažení lepších výsledků. Tato potřeba byla jedním z důvodů, proč jsem se rozhodl implementovat tzv. ensemble averaging.
+
+\subsubsection{Ensemble averaging}
+Vzhledem k omezením standardních metod pro odstranění šumu, jsem se rozhodl implementovat přístup zvaný ensemble averaging. Tento přístup kombinuje výsledky několika různých metod pro odstranění šumu a poskytuje tak robustnější a efektivnější řešení.
+
+Hlavním důvodem pro použití ensemble averaging je překonání omezení jednotlivých metod. Jak již bylo zmíněno, každá standardní metoda má své silné a slabé stránky, a samotné použití jedné metody nemusí být dostatečné pro dosažení optimálních výsledků v reálných scénářích, kde může být přítomno více typů šumu.
+
+Ensemble averaging využívá kombinaci několika metod k dosažení následujících výhod:
+
+\begin{itemize}
+    \item \textbf{Robustnost:} Kombinací výsledků z různých metod lze dosáhnout robustnějšího odstranění šumu, které není závislé na jednom specifickém typu šumu.
+    \item \textbf{Zlepšení kvality obrazu:} Průměrováním výsledků se minimalizují chyby a artefakty, které mohou vzniknout při použití jednotlivých metod.
+    \item \textbf{Přizpůsobivost:} Tento přístup je přizpůsobivý různým typům šumu a jejich kombinacím, což je klíčové pro praktické aplikace.
+\end{itemize}
+
+Implementace ensemble averaging zahrnuje několik kroků. Každý obraz je zpracován několika různými metodami pro odstranění šumu, které jsou aplikovány samostatně, aby se zabránilo vzájemnému ovlivňování. Výstupy těchto metod jsou poté průměrovány za účelem vytvoření finálního obrazu s odstraněným šumem. Níže je ukázka kódu pro implementaci ensemble averaging:
+
+\begin{lstlisting}[language=Python, caption={Implementace Ensemble Averaging metody}, label={lst:ensemble_averaging}]
+    def apply_standard_preprocessing(
+    image: npt.NDArray, transform_type: str, params: Dict | None = None
+) -> Image.Image:
+    preprocessing_method = getattr(standart_preprocessing, f"apply_{transform_type}")
+
+    if preprocessing_method and callable(preprocessing_method):
+        if params is None:
+            return Image.fromarray(preprocessing_method(image))
+        else:
+            return Image.fromarray(preprocessing_method(image, **params))
+    else:
+        print("No preprocessing was applied!")
+        return Image.fromarray(image)
+
+
+def standard_preprocessing_ensemble_averaging(
+    image: npt.NDArray[np.uint8], preprocessing_config: Dict[str, Dict[str, Any]]
+) -> Image.Image:
+    preprocessed_images: List[npt.NDArray[np.float64]] = []
+
+    for method, params in track(
+        sequence=preprocessing_config.items(),
+        description="Applying preprocessing method...",
+        total=len(preprocessing_config),
+    ):
+        image_copy = np.array(image, copy=True)
+        processed_image = apply_standard_preprocessing(image_copy, method, params)
+        preprocessed_images.append(np.array(processed_image))
+
+    averaged_image = cast(npt.NDArray[np.float64], np.mean(preprocessed_images, axis=0))
+    return Image.fromarray(averaged_image.astype(np.uint8))
+\end{lstlisting}
+
+Ensemble averaging nabízí několik výhod, které zlepšují kvalitu výsledného obrazu a jeho robustnost. Kombinace výsledků z různých metod pro odstranění šumu vede k lepšímu celkovému odstranění šumu, protože silné stránky jednotlivých metod se navzájem doplňují. Tento přístup zajišťuje, že výsledný obraz je méně náchylný k artefaktům a chybám, které mohou vzniknout při použití pouze jedné metody. Díky tomu je možné dosáhnout vyšší kvality obrazu, a to i v přítomnosti různých typů šumu.
+
+Nicméně ensemble averaging má také svá omezení. Jedním z hlavních problémů je výpočetní náročnost, protože každá metoda musí být aplikována samostatně na každý obraz, což výrazně zvyšuje dobu zpracování. Dalším omezením je složitost nastavení parametrů jednotlivých metod, protože různé snímky se mohou lišit a metody mohou vykazovat odlišné chování v závislosti na těchto rozdílech. Navíc kvalita výsledného obrazu závisí na výkonnosti jednotlivých metod, pokud tedy některá metoda selže, může to negativně ovlivnit celkový výsledek.
+
+\section{Návrh a implementace specializovaných modelů neuronových sítí}
 
 % \section{Tvorba modelů}
 
