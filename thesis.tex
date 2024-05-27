@@ -877,9 +877,65 @@ def estimate_noise_in_image(
 Tato funkce mi umožňuje kvantifikovat a porovnávat úrovně šumu a pomocí těchto odhadů mohu lépe analyzovat výkon algoritmů na různých úrovních šumu.
 
 \section{Návrh metod vhodných pro předzpracování rentgenových snímků}
-V této části se budu zabývat implementací různých standardních metod používaných pro odstranění šumu a zlepšení kvality obrazu. Zatímco teoretické pozadí a principy těchto metod byly popsány v teoretické části této práce, následující část se zaměřuje na praktické aspekty jejich implementace, včetně jakýchkoliv dalších algoritmů, které dosud nebyly zmíněny. Dále vysvětlím použití tzv. Ensemble Averaging postupu, který napomáhá ke zlepšení robustnosti algoritmů pro redukci šumu.
+V této části se budu zabývat charakteristikou použitých knihoven a technologií, nastavením projektu pomocí nástroje Poetry a implementací různých standardních metod používaných pro odstranění šumu a zlepšení kvality obrazu. Zatímco teoretické pozadí a principy těchto metod byly popsány v teoretické části této práce, následující část se zaměřuje na praktické aspekty jejich implementace, včetně jakýchkoliv dalších algoritmů, které dosud nebyly zmíněny. Dále vysvětlím použití tzv. Ensemble Averaging postupu, který napomáhá ke zlepšení robustnosti algoritmů pro redukci šumu.
 
-\subsubsection{Vybrané metody a jejich implementace}
+\subsection{Struktura projektu, použité knihovny a technologie}
+Pro tento projekt jsem zvolil nástroj Poetry, který umožňuje snadnou správu závislostí a vytváření virtuálních prostředí. Poetry poskytuje pohodlný způsob, jak udržovat konzistenci balíčků a odděluje závislosti projektu od systémových knihoven. To usnadňuje sdílení projektu a zajišťuje, že všechny potřebné knihovny budou správně nainstalovány.
+
+\subsubsection{Instalace a konfigurace Poetry}
+Instalace nástroje Poetry začíná instalací pipx, což je nástroj umožňující instalaci a izolaci Python aplikací. 
+
+\begin{lstlisting}[language=bash, caption={Instalace pipx}]
+    python -m pip install pipx
+\end{lstlisting}
+
+Poté pomocí pipx je možné nainstalovat nástroj Poetry:
+
+\begin{lstlisting}[language=bash, caption={Instalace Poetry}]
+    pipx install poetry
+\end{lstlisting}
+
+Po instalaci Poetry je nutné se přesunout do kořenového adresáře projektu a nainstalovat všechny závislosti definované v souboru pyproject.toml pomocí následujícího příkazu:
+
+\begin{lstlisting}[language=bash, caption={Instalace virtuálního prostředí a knihoven}]
+    cd cesta/k/projektu
+    poetry install
+\end{lstlisting}
+
+\subsubsection{Použité knihovny}
+V tomto projektu jsem použil několik důležitých knihoven. Nejvýznamnější z nich je \textbf{PyTorch Lightning}, která usnadňuje implementaci neuronových sítí a byla vybrána pro snadné a přehledné trénování modelů. Další důležité knihovny zahrnují již dříve zmíněný NumPy pro numerické výpočty, scikit-image pro zpracování snímků a Matplotlib pro vizualizaci dat. Následující tabulka ukazuje kompletní přehled použitých závislostí v této práci:
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|l|}
+    \hline
+    \textbf{Knihovna}       & \textbf{Popis}                                          \\ \hline
+    \textbf{python}         & Základní programovací jazyk pro tento projekt.          \\ \hline
+    \textbf{torch}          & Hlavní knihovna pro implementaci neuronových sítí.      \\ \hline
+    \textbf{torchaudio}     & Knihovna pro zpracování audio dat v PyTorch.            \\ \hline
+    \textbf{torchvision}    & Knihovna pro zpracování obrazových dat v PyTorch.       \\ \hline
+    \textbf{lightning}      & Framework pro snadné trénování modelů v PyTorch.        \\ \hline
+    \textbf{pillow}         & Knihovna pro práci s obrazovými daty.                   \\ \hline
+    \textbf{pandas}         & Knihovna pro manipulaci s daty a jejich analýzu.        \\ \hline
+    \textbf{pydantic}       & Knihovna pro validaci dat.                              \\ \hline
+    \textbf{opencv-python}  & Knihovna pro práci s obrazovými daty a předzpracování.  \\ \hline
+    \textbf{torchmetrics}   & Knihovna pro výpočet metrik pro hodnocení modelů.       \\ \hline
+    \textbf{matplotlib}     & Knihovna pro vizualizaci dat.                           \\ \hline
+    \textbf{mlflow}         & Nástroj pro sledování experimentů a modelů.             \\ \hline
+    \textbf{scikit-image}   & Knihovna pro zpracování snímků.                         \\ \hline
+    \textbf{rich}           & Knihovna pro pokročilé logování.                        \\ \hline
+    \textbf{pywavelets}     & Knihovna pro práci s waveletovou transformací.          \\ \hline
+    \textbf{numba}          & Knihovna pro akceleraci numerických výpočtů.            \\ \hline
+    \end{tabular}
+    \caption{Přehled použitých knihoven}
+    \label{tab
+    }
+\end{table}
+
+\subsubsection{Struktura projektu}
+Projekt je strukturován tak, aby umožňoval efektivní správu kódu a snadnou navigaci mezi různými částmi. V kořenovém adresáři projektu se nachází hlavní soubor \textbf{main.py}, který zahrnuje všechny funkce pro trénování, testování a tvorbu datasetů. Složka \textbf{common} obsahuje skripty pro vizualizaci, tvorbu datasetů a základní struktury tříd. Konfigurační soubory pro různé experimenty a nastavení filtrů jsou umístěny ve složce \textbf{configs}. Předzpracování dat, jak pomocí standardních metod, tak pomocí neuronových sítí, se nachází ve složce \textbf{preprocessing}. Implementace U-Net modelu a související skripty jsou umístěny ve složce \textbf{unet}. Tento strukturovaný přístup umožňuje udržovat kód přehledný a organizovaný, což je klíčové pro efektivní vývoj.
+
+\subsection{Vybrané metody a jejich implementace}
 V této práci jsem se zaměřil na implementaci vybraných standardních metod pro odstranění šumu a zvýšení kvality obrazu. V následujícím seznamu jsou uvedeny použité metody spolu s jejich krátkým popisem: 
 
 \begin{itemize}
@@ -937,7 +993,7 @@ Některé z metod nebyly ve zmíněných knihovnách dostupné, bylo proto nutn�
         return filtered_image_uint8
 \end{lstlisting}
 
-\subsubsection{Výzvy a úskalí standardních metod}
+\subsection{Výzvy a úskalí standardních metod}
 Standardní metody pro odstranění šumu mají několik omezení, která mohou ovlivnit jejich účinnost v reálných aplikacích. Tato omezení jsou důležitá pro pochopení, proč samotné použití těchto metod nemusí být vždy dostatečné a proč je třeba hledat pokročilejší přístupy.
 
 Většina standardních metod je navržena tak, aby se zaměřovala na specifické typy šumu. Například mediánový filtr je efektivní pro odstranění impulzního šumu, ale nemusí být účinný proti jiným typům. Toto zaměření na specifické typy šumu znamená, že pokud není typ šumu v obraze znám, může být obtížné vybrat správnou metodu pro jeho odstranění. V reálných aplikacích často není možné předem určit, jaký typ šumu bude v obraze přítomen, což výrazně omezuje účinnost těchto metod.
@@ -946,7 +1002,7 @@ Dalším problémem je přítomnost více typů šumu současně v jednom obraze
 
 Tento problém kombinace šumů vede k potřebě metod, které jsou schopny efektivně řešit více typů šumu současně, nebo metod, které kombinují výstupy různých filtrů pro dosažení lepších výsledků. Tato potřeba byla jedním z důvodů, proč jsem se rozhodl implementovat tzv. ensemble averaging.
 
-\subsubsection{Ensemble averaging}
+\subsection{Ensemble averaging}
 Vzhledem k omezením standardních metod pro odstranění šumu, jsem se rozhodl implementovat přístup zvaný ensemble averaging. Tento přístup kombinuje výsledky několika různých metod pro odstranění šumu a poskytuje tak robustnější a efektivnější řešení.
 
 Hlavním důvodem pro použití ensemble averaging je překonání omezení jednotlivých metod. Jak již bylo zmíněno, každá standardní metoda má své silné a slabé stránky, a samotné použití jedné metody nemusí být dostatečné pro dosažení optimálních výsledků v reálných scénářích, kde může být přítomno více typů šumu.
@@ -1000,14 +1056,11 @@ Ensemble averaging nabízí několik výhod, které zlepšují kvalitu výsledn�
 Nicméně ensemble averaging má také svá omezení. Jedním z hlavních problémů je výpočetní náročnost, protože každá metoda musí být aplikována samostatně na každý obraz, což výrazně zvyšuje dobu zpracování. Dalším omezením je složitost nastavení parametrů jednotlivých metod, protože různé snímky se mohou lišit a metody mohou vykazovat odlišné chování v závislosti na těchto rozdílech. Navíc kvalita výsledného obrazu závisí na výkonnosti jednotlivých metod, pokud tedy některá metoda selže, může to negativně ovlivnit celkový výsledek.
 
 \section{Návrh a implementace specializovaných modelů neuronových sítí}
-Následující sekce bude věnována návrhu a implementaci specializovaných modelů neuronových sítí pro odstranění šumu z rentgenových snímků. Sekce bude zahrnovat charakteristiku použitých knihoven a technologií, nastavení projektu pomocí nástroje Poetry a detailní popis tří různých modelů neuronových sítí: DnCNN, DAE a UNet. Popis modelů bude obsahovat podrobnosti o tom, jak jednotlivé modely fungují a bude také podrobně popsána jejich implementace, s důrazem na výsledky dosažené při odstraňování šumu.
+Následující sekce bude věnována návrhu a implementaci specializovaných modelů neuronových sítí pro odstranění šumu z rentgenových snímků. Sekce bude zahrnovat detailní popis tří různých modelů neuronových sítí: Denoising convolutional neural network (DnCNN), Denoising autoencoder (DAE) a U-Net. Popis modelů bude obsahovat podrobnosti o tom, jak jednotlivé modely fungují a bude také podrobně popsána jejich implementace, s důrazem na výsledky dosažené při odstraňování šumu.
 
-\subsection{Project setup - libraries and technologies}
-\subsection{Configuration files or overview of project}
-\subsection{Description of neural networks DnCNN, DAE, UNet with images}
+\subsection{Description of neural networks DnCNN, DAE, U-Net with images}
 \subsection{Implementation details of networks}
 \subsection{Results of DnCNN and DAE for denoising images}
-
 
 \section{Aplikace implementovaných metod a měření vlivu předzpracování na efektivitu učení segmentačních modelů}
 
