@@ -786,7 +786,7 @@ Tato datová sada je složena ze dvou různých zdrojů, z nichž každá přisp
 Spojením těchto dvou datových sad bude docíleno rozmanitosti snímků využitím jak velmi kvalitních z první sady, tak méně kvalitních z druhé datové sady. Tím bude umožněno modelům sítě U-Net se přizpůsobit i na nečekané vstupy a zvýší se jejich schopnost generalizace. Vytvoříme tak komplexní datovou sadu, která bude efektivně sloužit k trénování a validaci U-Net modelů. Celkově se bude v sadě nacházet 5000 vybraných snímků hrudníku s přiloženými segmentačními maskami.
 
 \subsection{Datová sada pro segmentaci zubů}
-Jelikož je segmentace plic jednoduchý binární problém, bylo nutné zvolit si i složitější úlohu pro správně posouzení dopadu předzpracování a augmentace dat na síť U-Net. Vzhledem k mým předchozím zkušenostem a vysoké náročnosti segmentace jsem si jako další datovou sadu zvolil rentgenové snímky zubů.
+Jelikož je segmentace plic jednoduchý binární problém, bylo nutné zvolit si i složitější úlohu pro správně posouzení dopadu předzpracování a augmentace dat na síť U-Net. Vzhledem k mým předchozím zkušenostem a vysoké náročnosti segmentace jsem si jako další datovou sadu zvolil rentgenové snímky zubů. Tato datová sada je dostupná na stránkách \href{https://www.kaggle.com/datasets/humansintheloop/teeth-segmentation-on-dental-x-ray-images}{Kaggle}. \cite{TeethDataset}
 
 \subsubsection{Náročnost segmentace zubů}
 Segmentace zubů je velmi nárnočný problém z několika důvodů:
@@ -802,9 +802,14 @@ Všechny tyto faktory přidávají další variabilitu a složitost pro trénova
 \subsubsection{Popis datové sady}
 Datová sada zahrnuje téměř 600 rentgenových snímků zubů, z čehoz bude použito 500 vybraných snímků s jejich segmentačními maskami. Tyto snímky jsou v nižší kvalitě ve srovnání s rentgeny plic. Snímky jsou anotovány jak pro dětské, tak i pro dospělé zuby, přičemž je použito stejné označení pro oba typy zubů, tedy například dospělý zub 11 má stejnou značku jako dětský zub 11. I když toto označení není ideální, pro naše účely nepředstavuje problém.
 
-Pro lepší orientaci je ústní dutina rozdělena do čtyř kvadrantů a zuby jsou označeny ve směru hodinových ručiček následovně: 18, až 11, 21, až 28, 48, až 41, 31, až 38 // TODO: lépe napsat a dát obrázek. Toto označení zahrnuje všechny hlavní zuby, což usnadňuje přesné a konzistentní anotování.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\linewidth]{Prilohy/Obrazky/FDITeethLabels.png}
+    \caption{Úkázka jednotlivých zubů s příslušným označením v podobě čísel jdoucím po směru hodinových ručiček. (převzato z \cite{teethLabelImg} pod licencí CC BY-SA 3.0)}
+    \label{fig:teethLabel}
+\end{figure}
 
-Tato datová sada je dostupná na stránkách \href{https://www.kaggle.com/datasets/humansintheloop/teeth-segmentation-on-dental-x-ray-images}{Kaggle}. \cite{TeethDataset}
+Pro lepší orientaci je ústní dutina rozdělena do čtyř kvadrantů a zuby jsou označeny ve směru hodinových ručiček dvojčíslím, kde první číslo označuje číslo zubu a druhé kvadrant, ve kterém se zub nachází viz \ref{fig:teethLabel}. Toto označení se zubů nazývá FDI a zahrnuje všechny důležité informace, což usnadňuje přesné a konzistentní anotování.
 
 \subsection{Aplikace šumu na snímky v datové sadě}
 Následující sekce je soustředěna na přidávání šumu do snímků ve vytvořené datové sadě, aby bylo možné vytvořit trénovací a validační sady pro vyhodnocování algoritmů pro redukci šumu. V první kapitole byly popsány nejčastěji se vyskytující typy šumu ve snímcích. V této práci se zaměřím na redukci tří nejčastějších typů šumů v retgenových snímcích: speckle šum, impulzní šum a Poissonův šum \cite{MostCommonNoises}.
