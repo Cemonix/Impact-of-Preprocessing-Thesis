@@ -805,7 +805,7 @@ Datová sada zahrnuje téměř 600 rentgenových snímků zubů, z čehoz bude p
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\linewidth]{Prilohy/Obrazky/FDITeethLabels.png}
-    \caption{Úkázka jednotlivých zubů s příslušným označením v podobě čísel jdoucím po směru hodinových ručiček. (převzato z \cite{teethLabelImg} pod licencí CC BY-SA 3.0)}
+    \caption{Úkázka jednotlivých zubů s příslušným označením v podobě čísel jdoucím po směru hodinových ručiček. (převzato z \cite{teethLabelImg})}
     \label{fig:teethLabel}
 \end{figure}
 
@@ -842,36 +842,36 @@ Pro aplikaci šumu na snímky jsem využil knihovnu \texttt{numpy} \cite{Numpy},
 Pro aplikaci šumu na snímky jsem využil knihovnu \texttt{numpy}, se kterou jsem implementoval funkce pro přidání speckle šumu, šumu soli a pepře a Poissonova šumu. Hlavním parametrem těchto funkcí je intenzita šumu, nikoli jeho směrodatná odchylka (std). Použití intenzity jako parametru je praktické pro aplikaci různých úrovní šumu, ale pro analýzu a srovnání je často nutné znát skutečnou směrodatnou odchylku šumu v obraze. Proto jsem vyvinul následující funkci, která odhaduje směrodatnou odchylku šumu v obraze pomocí extrakce segmentů (anglicky "patches") a analýzy hlavních komponent (PCA). Následující kód ukazuje implementaci zmíněné funkce\footnote{Kompletní implementace funkcí pro přidání šumu lze nalézt v GitHub repozitáři této práce.}.
 
 \begin{lstlisting}[language=Python, caption={Funkce pro odhad směrodatné odchylky šumu ve snímku}, label={lst:noise_estimation}]
-import numpy as np
-from sklearn.feature_extraction.image import extract_patches_2d
-from sklearn.decomposition import PCA
-from typing import Tuple
+    import numpy as np
+    from sklearn.feature_extraction.image import extract_patches_2d
+    from sklearn.decomposition import PCA
+    from typing import Tuple
 
-def estimate_noise_in_image(
-    image: np.ndarray, patch_size: Tuple[int, int] = (7, 7), num_patches: int = 1000,
-    lower_percentile: float = 0.1, upper_percentile: float = 0.2
-) -> tuple:
-    (*\# Extrahuje segmenty *)
-    patches = extract_patches_2d(image, patch_size, max_patches=num_patches)
-    
-    (*\# Přetvoří segmenty na 2D pole, kde každý řádek je segment *)
-    patches = patches.reshape(patches.shape[0], -1).astype(np.float32)
-    
-    (*\# Odebere průměr *)
-    patches -= np.mean(patches, axis=1, keepdims=True)
-    
-    (*\# PCA pro nalezení vlastních čísel *)
-    pca = PCA(n_components=patch_size[0]*patch_size[1])
-    pca.fit(patches)
-    
-    (*\# Vypočítá indexy pro požadovaný percentilní v rozsahu vlastních čísel *)
-    lower_index = int(lower_percentile * len(pca.explained_variance_))
-    upper_index = int(upper_percentile * len(pca.explained_variance_))
-    
-    (*\# Medián vlastních čísel ve specifikovaném percentilním rozsahu *)
-    noise_variance = np.median(pca.explained_variance_[lower_index:upper_index])
-    
-    return np.sqrt(pca.explained_variance_), np.sqrt(noise_variance)
+    def estimate_noise_in_image(
+        image: np.ndarray, patch_size: Tuple[int, int] = (7, 7), num_patches: int = 1000,
+        lower_percentile: float = 0.1, upper_percentile: float = 0.2
+    ) -> tuple:
+        (*\# Extrahuje segmenty *)
+        patches = extract_patches_2d(image, patch_size, max_patches=num_patches)
+        
+        (*\# Přetvoří segmenty na 2D pole, kde každý řádek je segment *)
+        patches = patches.reshape(patches.shape[0], -1).astype(np.float32)
+        
+        (*\# Odebere průměr *)
+        patches -= np.mean(patches, axis=1, keepdims=True)
+        
+        (*\# PCA pro nalezení vlastních čísel *)
+        pca = PCA(n_components=patch_size[0]*patch_size[1])
+        pca.fit(patches)
+        
+        (*\# Vypočítá indexy pro požadovaný percentilní v rozsahu vlastních čísel *)
+        lower_index = int(lower_percentile * len(pca.explained_variance_))
+        upper_index = int(upper_percentile * len(pca.explained_variance_))
+        
+        (*\# Medián vlastních čísel ve specifikovaném percentilním rozsahu *)
+        noise_variance = np.median(pca.explained_variance_[lower_index:upper_index])
+        
+        return np.sqrt(pca.explained_variance_), np.sqrt(noise_variance)
 \end{lstlisting}
 
 Tato funkce mi umožňuje kvantifikovat a porovnávat úrovně šumu a pomocí těchto odhadů mohu lépe analyzovat výkon algoritmů na různých úrovních šumu.
@@ -1019,36 +1019,36 @@ Implementace ensemble averaging zahrnuje několik kroků. Každý obraz je zprac
 
 \begin{lstlisting}[language=Python, caption={Implementace Ensemble Averaging metody}, label={lst:ensemble_averaging}]
     def apply_standard_preprocessing(
-    image: npt.NDArray, transform_type: str, params: Dict | None = None
-) -> Image.Image:
-    preprocessing_method = getattr(standart_preprocessing, f"apply_{transform_type}")
+        image: npt.NDArray, transform_type: str, params: Dict | None = None
+    ) -> Image.Image:
+        preprocessing_method = getattr(standart_preprocessing, f"apply_{transform_type}")
 
-    if preprocessing_method and callable(preprocessing_method):
-        if params is None:
-            return Image.fromarray(preprocessing_method(image))
+        if preprocessing_method and callable(preprocessing_method):
+            if params is None:
+                return Image.fromarray(preprocessing_method(image))
+            else:
+                return Image.fromarray(preprocessing_method(image, **params))
         else:
-            return Image.fromarray(preprocessing_method(image, **params))
-    else:
-        print("No preprocessing was applied!")
-        return Image.fromarray(image)
+            print("No preprocessing was applied!")
+            return Image.fromarray(image)
 
 
-def standard_preprocessing_ensemble_averaging(
-    image: npt.NDArray[np.uint8], preprocessing_config: Dict[str, Dict[str, Any]]
-) -> Image.Image:
-    preprocessed_images: List[npt.NDArray[np.float64]] = []
+    def standard_preprocessing_ensemble_averaging(
+        image: npt.NDArray[np.uint8], preprocessing_config: Dict[str, Dict[str, Any]]
+    ) -> Image.Image:
+        preprocessed_images: List[npt.NDArray[np.float64]] = []
 
-    for method, params in track(
-        sequence=preprocessing_config.items(),
-        description="Applying preprocessing method...",
-        total=len(preprocessing_config),
-    ):
-        image_copy = np.array(image, copy=True)
-        processed_image = apply_standard_preprocessing(image_copy, method, params)
-        preprocessed_images.append(np.array(processed_image))
+        for method, params in track(
+            sequence=preprocessing_config.items(),
+            description="Applying preprocessing method...",
+            total=len(preprocessing_config),
+        ):
+            image_copy = np.array(image, copy=True)
+            processed_image = apply_standard_preprocessing(image_copy, method, params)
+            preprocessed_images.append(np.array(processed_image))
 
-    averaged_image = cast(npt.NDArray[np.float64], np.mean(preprocessed_images, axis=0))
-    return Image.fromarray(averaged_image.astype(np.uint8))
+        averaged_image = cast(npt.NDArray[np.float64], np.mean(preprocessed_images, axis=0))
+        return Image.fromarray(averaged_image.astype(np.uint8))
 \end{lstlisting}
 
 Ensemble averaging nabízí několik výhod, které zlepšují kvalitu výsledného obrazu a jeho robustnost. Kombinace výsledků z různých metod pro odstranění šumu vede k lepšímu celkovému odstranění šumu, protože silné stránky jednotlivých metod se navzájem doplňují. Tento přístup zajišťuje, že výsledný obraz je méně náchylný k artefaktům a chybám, které mohou vzniknout při použití pouze jedné metody. Díky tomu je možné dosáhnout vyšší kvality obrazu, a to i v přítomnosti různých typů šumu.
@@ -1056,13 +1056,137 @@ Ensemble averaging nabízí několik výhod, které zlepšují kvalitu výsledn�
 Nicméně ensemble averaging má také svá omezení. Jedním z hlavních problémů je výpočetní náročnost, protože každá metoda musí být aplikována samostatně na každý obraz, což výrazně zvyšuje dobu zpracování. Dalším omezením je složitost nastavení parametrů jednotlivých metod, protože různé snímky se mohou lišit a metody mohou vykazovat odlišné chování v závislosti na těchto rozdílech. Navíc kvalita výsledného obrazu závisí na výkonnosti jednotlivých metod, pokud tedy některá metoda selže, může to negativně ovlivnit celkový výsledek.
 
 \section{Návrh a implementace specializovaných modelů neuronových sítí}
-Následující sekce bude věnována návrhu a implementaci specializovaných modelů neuronových sítí pro odstranění šumu z rentgenových snímků. Sekce bude zahrnovat detailní popis tří různých modelů neuronových sítí: Denoising convolutional neural network (DnCNN), Denoising autoencoder (DAE) a U-Net. Popis modelů bude obsahovat podrobnosti o tom, jak jednotlivé modely fungují a bude také podrobně popsána jejich implementace, s důrazem na výsledky dosažené při odstraňování šumu.
+Následující sekce bude věnována návrhu a implementaci specializovaných modelů neuronových sítí pro odstranění šumu z rentgenových snímků. Sekce bude zahrnovat detailní popis dvou různých modelů neuronových sítí: konvoluční neuronovová síť pro redukci šumu (Denoising convolutional neural network DnCNN) a autoenkodér pro redukci šumu (Denoising autoencoder DAE). Popis modelů bude obsahovat podrobnosti o tom, jak jednotlivé modely fungují a bude také podrobně popsána jejich implementace, s důrazem na výsledky dosažené při odstraňování šumu.
 
-\subsection{Description of neural networks DnCNN, DAE, U-Net with images}
-\subsection{Implementation details of networks}
-\subsection{Results of DnCNN and DAE for denoising images}
+% Autoenkodér pro redukci šumu (DAE):
+% Describe the architecture of the DAE, including encoder and decoder components.
+% Explain how the DAE reconstructs images and the loss function used for training.
+% Provide details on the training process and any specific techniques used to enhance performance.
+% Include code snippets for the model architecture and training loop if space allows.
+
+% Metriky pro zhodnocení modelů:
+% Define and explain the metrics used to evaluate the models (e.g., PSNR, SSIM).
+% Justify the choice of these metrics and how they relate to the task of denoising.
+
+% Výsledky neuronových sítí DnCNN a DAE při redukci šumu z rentgenových snímků:
+% Present the results obtained from training and evaluating both models.
+% Use tables and graphs to compare the performance of DnCNN and DAE.
+% Discuss the results, highlighting strengths and weaknesses of each model.
+% Mention any insights gained from the experiments and how they can inform future work.
+
+\subsection{Neuronová síť DnCNN}
+Konvoluční neuronovová síť pro redukci šumu (DnCNN) je pokročilý model, který se na rozdíl od tradičních metod zaměřuje na předvídání šumu přítomného v obraze, aniž by předvídal celý obraz. Tento nalazený šum je poté odečten od zašuměného vstupu, aby se získal čistý obraz. Tato metoda využívá residuální učení (residual learning), které umožňuje síti naučit se mapování ze zašuměného obrazu na samostatný šum. Koncept a implementace DnCNN byly představeny v článku "Beyond a Gaussian Denoiser: Residual Learning of Deep CNN for Image Denoising" \cite{DnCNN}.
+
+\subsubsection{Architektura DnCNN}
+Architektura DnCNN se skládá z několika konvolučních vrstev propojených aktivačními funkcemi ReLU a normalizačními vrstvami BatchNorm. Počáteční vrstva transformuje vstupní obraz na reprezentaci do vyšší dimenze. Následuje série vrstev, z nichž každá je následována vrstvou BatchNorm a aktivační funkcí ReLU. Tyto mezivrstvy umožňují modelu efektivně extrahovat rysy z obrazu a učit se složité vzory šumu. Poslední vrstvou je konvoluční vrstva, která předpovídá šum v obraze. Síť se může zaměřit na zachycení vysokofrekvenčních složek šumu, jejichž modelování je často náročnější. Tato konstrukce výrazně zlepšuje schopnost sítě odstraňovat z obrazu různé typy šumu, což vede k lepšímu výkonu ve srovnání s běžnými metodami. Níže je implementace této architektury:
+
+\begin{lstlisting}[language=Python, caption={Implementace konvoluční neuronovové sítě pro redukci šumu}, label={lst:DnCNN}]
+    import torch
+    import torch.nn as nn
+    from torchmetrics import MetricCollection
+    from preprocessing.neural_networks.model import PreprocessingModel
+    
+    class DnCNN(PreprocessingModel):
+        def __init__(
+            self,
+            depth: int = 17,
+            n_channels: int = 64,
+            image_channels: int = 1,
+            learning_rate: float = 1e-4,
+            metrics: MetricCollection | None = None,
+        ) -> None:
+            super(DnCNN, self).__init__(learning_rate=learning_rate, metrics=metrics)
+            layers = [
+                nn.Conv2d(image_channels, n_channels, kernel_size=3, padding=1),
+                nn.ReLU(inplace=True),
+            ]
+    
+            for _ in range(depth - 2):
+                layers.append(nn.Conv2d(n_channels, n_channels, kernel_size=3, padding=1))
+                layers.append(nn.BatchNorm2d(n_channels))
+                layers.append(nn.ReLU(inplace=True))
+    
+            layers.append(nn.Conv2d(n_channels, image_channels, kernel_size=3, padding=1))
+    
+            self.dncnn = nn.Sequential((**layers*))
+    
+            def forward(self, x: torch.Tensor) -> torch.Tensor:
+                predicted_noise = self.dncnn(x)
+                return x - predicted_noise
+\end{lstlisting}
+
+\subsubsection{Tréninkový proces}
+Tréninkový proces DnCNN zahrnuje několik klíčových kroků, které zajišťují, že se model efektivně naučí předvídat a odstraňovat šum ze snímků. Tento proces využívá ztrátovou funkci střední kvadratické chyby (MSE) k měření rozdílu mezi předpokládaným šumem a skutečným šumem přítomným ve snímcích.
+
+Níže je implementace třídy PreprocessingModel, která slouží jako základní třída pro modely redukující šum, včetně DnCNN. Tato třída definuje metody pro konfiguraci optimalizátoru, pro učení a testování spolu s metrikami pro ohodnocení modelu.
+
+\begin{lstlisting}[language=Python, caption={Třída pro modelu redukující šum}, label={lst:PreprocessingClass}]
+    from abc import ABC, abstractmethod
+    from typing import Any, Dict
+    import torch
+    import torch.nn.functional as F
+    import torch.optim as optim
+    from lightning import LightningModule
+    from torchmetrics import MeanSquaredError, MetricCollection
+
+    class PreprocessingModel(LightningModule, ABC):
+        def __init__(
+            self,
+            learning_rate: float = 1e-4,
+            metrics: MetricCollection | None = None,
+        ) -> None:
+            super(PreprocessingModel, self).__init__()
+            self.learning_rate = learning_rate
+            self.metrics = metrics or MetricCollection({"MSE": MeanSquaredError()})
+            self.save_hyperparameters(ignore=["metrics"])
+
+        @abstractmethod
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            pass
+
+        def configure_optimizers(self) -> Dict[str, Any]:
+            optimizer = optim.Adam(self.parameters(), lr=self.learning_rate)
+            return {"optimizer": optimizer}
+
+        def training_step(
+            self, batch: Any, batch_idx: int
+        ) -> torch.Tensor:
+            noised_images, target = batch
+            denoised_images = self(noised_images)
+            loss = F.mse_loss(denoised_images, target)
+            self.log("train_loss", loss, on_step=True, prog_bar=True, logger=True)
+            return loss
+
+        def validation_step(
+            self, batch: Any, batch_idx: int
+        ) -> None:
+            noised_images, target = batch
+            denoised_images = self(noised_images)
+
+            loss = F.mse_loss(denoised_images, target)
+            self.log("val_loss", loss, on_epoch=True, prog_bar=True, logger=True)
+            self.log_metrics(denoised_images, target)
+
+        def log_metrics(
+            self, denoised_images, target
+        ) -> None:
+            metrics: Dict[str, Any] = self.metrics(denoised_images, target)
+            for name, value in metrics.items():
+                self.log(f"val_{name}", value)
+\end{lstlisting}
+
+Tato třída slouží jako základ pro model DnCNN, který tuto třídu zdědí a implementuje specifickou architekturu a dopředný průchod pro predikci šumu.
+
+\subsection{Návrh autoenkodéru pro redukci šumu}
+
+\subsection{Metriky pro zhodnocení modelů}
+
+\subsection{Výsledky neuronových sítí DnCNN a DAE při redukci šumu z rentgenových snímků}
+
 
 \section{Aplikace implementovaných metod a měření vlivu předzpracování na efektivitu učení segmentačních modelů}
+
+
 
 \chapter{Zhodnocení} 
 
