@@ -1058,22 +1058,6 @@ Nicméně ensemble averaging má také svá omezení. Jedním z hlavních probl�
 \section{Návrh a implementace specializovaných modelů neuronových sítí}
 Následující sekce bude věnována návrhu a implementaci specializovaných modelů neuronových sítí pro odstranění šumu z rentgenových snímků. Sekce bude zahrnovat detailní popis dvou různých modelů neuronových sítí: konvoluční neuronovová síť pro redukci šumu (Denoising convolutional neural network DnCNN) a autoenkodér pro redukci šumu (Denoising autoencoder DAE). Popis modelů bude obsahovat podrobnosti o tom, jak jednotlivé modely fungují a bude také podrobně popsána jejich implementace, s důrazem na výsledky dosažené při odstraňování šumu.
 
-% Autoenkodér pro redukci šumu (DAE):
-% Describe the architecture of the DAE, including encoder and decoder components.
-% Explain how the DAE reconstructs images and the loss function used for training.
-% Provide details on the training process and any specific techniques used to enhance performance.
-% Include code snippets for the model architecture and training loop if space allows.
-
-% Metriky pro zhodnocení modelů:
-% Define and explain the metrics used to evaluate the models (e.g., PSNR, SSIM).
-% Justify the choice of these metrics and how they relate to the task of denoising.
-
-% Výsledky neuronových sítí DnCNN a DAE při redukci šumu z rentgenových snímků:
-% Present the results obtained from training and evaluating both models.
-% Use tables and graphs to compare the performance of DnCNN and DAE.
-% Discuss the results, highlighting strengths and weaknesses of each model.
-% Mention any insights gained from the experiments and how they can inform future work.
-
 \subsection{Neuronová síť DnCNN}
 Konvoluční neuronovová síť pro redukci šumu (DnCNN) je pokročilý model, který se na rozdíl od tradičních metod zaměřuje na předvídání šumu přítomného v obraze, aniž by předvídal celý obraz. Tento nalazený šum je poté odečten od zašuměného vstupu, aby se získal čistý obraz. Tato metoda využívá residuální učení (residual learning), které umožňuje síti naučit se mapování ze zašuměného obrazu na samostatný šum. Koncept a implementace DnCNN byly představeny v článku "Beyond a Gaussian Denoiser: Residual Learning of Deep CNN for Image Denoising" \cite{DnCNN}.
 
@@ -1120,7 +1104,7 @@ Tréninkový proces DnCNN zahrnuje několik klíčových kroků, které zajišť
 
 Níže je implementace třídy PreprocessingModel, která slouží jako základní třída pro modely redukující šum, včetně DnCNN. Tato třída definuje metody pro konfiguraci optimalizátoru, pro učení a testování spolu s metrikami pro ohodnocení modelu.
 
-\begin{lstlisting}[language=Python, caption={Třída pro modelu redukující šum}, label={lst:PreprocessingClass}]
+\begin{lstlisting}[language=Python, caption={Třída pro model redukující šum}, label={lst:PreprocessingClass}]
     from abc import ABC, abstractmethod
     from typing import Any, Dict
     import torch
@@ -1175,9 +1159,134 @@ Níže je implementace třídy PreprocessingModel, která slouží jako základn
                 self.log(f"val_{name}", value)
 \end{lstlisting}
 
-Tato třída slouží jako základ pro model DnCNN, který tuto třídu zdědí a implementuje specifickou architekturu a dopředný průchod pro predikci šumu.
+Tato třída slouží jako základ pro model DnCNN, který tuto třídu zdědí, implementuje specifickou architekturu a dopředný průchod pro predikci šumu.
 
 \subsection{Návrh autoenkodéru pro redukci šumu}
+Autoenkodér pro redukci šumu (DAE) je model hlubokého učení navržený k redukci šumu ze snímků předpovídáním celého čistého snímku, nikoli pouze šumu jako v případě modelu DnCNN. Tento přístup umožňuje modelu naučit se komplexní vztahy v daném obraze, čímž může nejen efektivněji redukovat různé typy šumů, ale také vytvořit obraz věrnější svému původnímu zdrojovému snímku. DAE je složitější neuronová síť než DnCNN, protože obsahuje více vrstev a neuronů, což by mělo přispět k lepší schopnosti detekce šumu. Nicméně, vytvoření robustnější sítě znamená, že model bude potřebovat větší množství tréninkových dat. Jejich nedostatek může vést k tomu, že se model začne přizpůsobovat specifikám tréninkových dat a může ztrácet na obecném výkonu.
+
+\subsubsection{Architektura DAE}
+Architektura DAE se skládá ze dvou hlavních součástí: enkodéru a dekodéru. Obě části jsou konstruovány pomocí konvolučních a dekonvolučních vrstev s aktivačními funkcemi ReLU a batch normalizací. Enkodér i dekodér obsahují každý šest vrstev, přičemž každá vrstva je navržena tak, aby postupně zpracovávala obrazové informace a detekovala složitější vzory ve snímcích.
+
+Enkodér komprimuje vstupní obraz do nižší dimenzionální reprezentace pomocí postupně aplikovaných konvolučních vrstev. Každá vrstva extrahuje stále složitější rysy z obrazových dat. Dekodér rekonstruuje čistý obraz z komprimované reprezentace využitím dekonvolučních vrstev. Vrstvy dekodéru postupně zvětšují rozlišení a kombinují informace z enkodéru pomocí tzv. \textit{skip connections}. Skip connections umožňují přenášet informace z odpovídajících vrstev enkodéru přímo do dekodéru, čímž napomáhají zachovat prostorové detaily a rysy z původního obrazu, které by mohly být ztraceny během komprimace.
+
+Architektura DAE je detailně znázorněna na diagramu \ref{fig:DAE}. Diagram ilustruje, jak jsou jednotlivé vrstvy enkodéru a dekodéru propojeny a také znázorňuje předávání dodatečných informací prostřednictvím skip connections. Enkodér začíná s konvoluční vrstvou s 64 filtry a postupně zvyšuje počet filtrů až na 512, zatímco dekodér postupně generuje obraz zpět do jeho původního rozlišení pomocí dekonvolučních vrstev. Níže je uvedena konkrétní implementace tříd autoenkodéru pro redukci šumu.
+
+\begin{lstlisting}[language=Python, caption={Implementace autoenkodéru pro redukci šumu}, label={lst:DAEClass}]
+    import torch
+    import torch.nn as nn
+    from lightning import LightningModule
+    from torchmetrics import MetricCollection
+    from preprocessing.neural_networks.model import PreprocessingModel
+
+    class ConvBlock(LightningModule):
+        def __init__(
+            self, in_channels: int, out_channels: int, kernel_size: int = 3,
+            padding: int = 1, stride: int = 1,
+        ) -> None:
+            super(ConvBlock, self).__init__()
+            self.conv = nn.Sequential(
+                nn.Conv2d(
+                    in_channels, out_channels, kernel_size=kernel_size,
+                    padding=padding, stride=stride,
+                ),
+                nn.ReLU(inplace=True),
+                nn.Dropout(0.2),
+                nn.BatchNorm2d(out_channels),
+            )
+
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            return self.conv(x)
+
+    class DeConvBlock(LightningModule):
+        def __init__(
+            self, in_channels: int, out_channels: int, kernel_size: int = 3,
+            stride: int = 1, padding: int = 1, output_padding: int = 1,
+        ) -> None:
+            super(DeConvBlock, self).__init__()
+            self.conv = nn.Sequential(
+                nn.ConvTranspose2d(
+                    in_channels, out_channels, kernel_size=kernel_size, stride=stride,
+                    padding=padding, output_padding=output_padding,
+                ),
+                nn.ReLU(inplace=True),
+                nn.Dropout(0.2),
+                nn.BatchNorm2d(out_channels),
+            )
+
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            return self.conv(x)
+
+    class DenoisingAutoencoder(PreprocessingModel):
+        def __init__(
+            self, n_channels: int = 1, learning_rate: float = 1e-4,
+            metrics: MetricCollection | None = None,
+        ) -> None:
+            super(DenoisingAutoencoder, self).__init__(
+                learning_rate=learning_rate, metrics=metrics
+            )        
+            self.encoder_layers = nn.ModuleList([
+                ConvBlock(n_channels, 64, 3, stride=1),
+                ConvBlock(64, 64, 3, stride=2),
+                ConvBlock(64, 128, 5, stride=2, padding=2),
+                ConvBlock(128, 128, 3, stride=1),
+                ConvBlock(128, 256, 5, stride=2, padding=2),
+                ConvBlock(256, 512, 3, stride=2),
+            ])
+            
+            self.decoder_layers = nn.ModuleList([
+                DeConvBlock(512, 512, 3, stride=2),
+                DeConvBlock(512, 256, 3, stride=2),
+                DeConvBlock(256, 128, 5, stride=2, padding=2),
+                DeConvBlock(128, 64, 3, stride=2),
+                DeConvBlock(64, 64, 3, stride=1, output_padding=0),
+                DeConvBlock(64, n_channels, 3, output_padding=0),
+            ])
+            
+            self.adjust_layers = nn.ModuleList([
+                nn.Conv2d(768, 512, kernel_size=1),
+                nn.Conv2d(384, 256, kernel_size=1),
+                nn.Conv2d(192, 128, kernel_size=1),
+                nn.Conv2d(128, 64, kernel_size=1),
+            ])
+
+            # Encoder layers that will be connected to decoder -> n-1
+            self.skip_connection_layer_idxs = [4, 2, 1, 0]
+
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            # Encoder
+            encoder_outputs = []
+            for encoder_layer in self.encoder_layers:
+                x = encoder_layer(x)
+                encoder_outputs.append(x)
+            
+            # Decoder with skip connections
+            for i, decoder_layer in enumerate(self.decoder_layers):
+                x = decoder_layer(x)
+                if i < len(self.skip_connection_layer_idxs):
+                    x = torch.cat([x, encoder_outputs[self.skip_connection_layer_idxs[i]]], dim=1)  # skip connections
+                    x = self.adjust_layers[i](x)  # adjust channels
+            
+            return x
+\end{lstlisting}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\linewidth]{Prilohy/Obrazky/DAE_UML.png}
+    \caption{Diagram zobrazující architekturu denoising autoenkodéru. (vytvořeno v \cite{DrawIO})}
+    \label{fig:DAE}
+\end{figure}
+
+% Metriky pro zhodnocení modelů:
+% Define and explain the metrics used to evaluate the models (e.g., PSNR, SSIM).
+% Justify the choice of these metrics and how they relate to the task of denoising.
+
+% Výsledky neuronových sítí DnCNN a DAE při redukci šumu z rentgenových snímků:
+% Present the results obtained from training and evaluating both models.
+% Use tables and graphs to compare the performance of DnCNN and DAE.
+% Discuss the results, highlighting strengths and weaknesses of each model.
+% Mention any insights gained from the experiments and how they can inform future work.
+
+% TODO: Přidat obrázky jako ukázku, co vystupuje z těch modelů
 
 \subsection{Metriky pro zhodnocení modelů}
 
@@ -1186,7 +1295,11 @@ Tato třída slouží jako základ pro model DnCNN, který tuto třídu zdědí 
 
 \section{Aplikace implementovaných metod a měření vlivu předzpracování na efektivitu učení segmentačních modelů}
 
+% Popsat Unet + jaccard index
+% Ukázat výsledky unetu bez udělání preprocessingu
+% Pak udělat kombinace, unet + klasika, unet + dncnn, unet + dae, a jiné kombinace - popsat, tabulky, atd
 
+% UML diagram pro nastínění pipeliny, přidat obrázky z mlflow a výsledné predikce
 
 \chapter{Zhodnocení} 
 
