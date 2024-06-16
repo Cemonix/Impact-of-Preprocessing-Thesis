@@ -1171,6 +1171,13 @@ Enkodér komprimuje vstupní obraz do nižší dimenzionální reprezentace pomo
 
 Architektura DAE je detailně znázorněna na diagramu \ref{fig:DAE}. Diagram ilustruje, jak jsou jednotlivé vrstvy enkodéru a dekodéru propojeny a také znázorňuje předávání dodatečných informací prostřednictvím skip connections. Enkodér začíná s konvoluční vrstvou s 64 filtry a postupně zvyšuje počet filtrů až na 512, zatímco dekodér postupně generuje obraz zpět do jeho původního rozlišení pomocí dekonvolučních vrstev. Níže je uvedena konkrétní implementace tříd autoenkodéru pro redukci šumu.
 
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\linewidth]{Prilohy/Obrazky/DAE_UML.png}
+    \caption{Diagram zobrazující architekturu denoising autoenkodéru. (vytvořeno v \cite{DrawIO})}
+    \label{fig:DAE}
+\end{figure}
+
 \begin{lstlisting}[language=Python, caption={Implementace autoenkodéru pro redukci šumu}, label={lst:DAEClass}]
     import torch
     import torch.nn as nn
@@ -1269,29 +1276,72 @@ Architektura DAE je detailně znázorněna na diagramu \ref{fig:DAE}. Diagram il
             return x
 \end{lstlisting}
 
+\subsection{Metriky pro ohodnocení modelů}
+Předtím než budu moci přejít na výsledky popsaných architektur neuronových sítí, bude nutné definovat vybrané metriky pro ohodnocení natrénovaných modelů. Tyto metriky slouží k ohodnocení predikovaných výsledků vůči vstupnímu obrazu. Pro ohodnocení popsaných modelů jsem si jako hlavní metriky zvolil Peak Signal-to-Noise Ratio (PSNR) a Structural Similarity Index (SSIM) kvůli jejich efektivitě při měření kvality obrazu.
+
+\subsubsection{Peak Signal-to-Noise Ratio (PSNR)}
+Peak Signal-to-Noise Ratio (PSNR) je široce používaná metrika pro hodnocení kvality rekonstruovaných snímků v porovnání se vstupními daty. PSNR se vypočítává na základě průměrné kvadratické chyby (MSE) mezi původním a rekonstruovaným obrazem. Hodnota udávaná touto metrikou je měřena v decibelech a vyšší hodnota PSNR značí lepší kvalitu obrazu, protože znamená nižší chybu mezi porovnávanými obrazy. \cite{PSNRSSIM}
+
+Vzorec pro výpočet PSNR je definován následovně:
+\begin{equation}
+    \text{PSNR} = 10 \cdot \log_{10} \left( \frac{\text{MAX}^2}{\text{MSE}} \right)
+\end{equation}
+\begin{conditions}
+    MAX &  je maximální možná hodnota pixelu v daném snímku (např. pro 8bitové obrazy je $MAX = 255$) \\
+    MSE &  je průměrná kvadratická chyba
+\end{conditions}
+
+\begin{equation}
+    \text{MSE} = \frac{1}{mn} \sum_{i=0}^{m-1} \sum_{j=0}^{n-1} [I(i,j) - K(i,j)]^2
+\end{equation}
+\begin{conditions}
+    I(i,j) &  je hodnota pixelu původního obrazu na pozici $(i, j)$ \\
+    K(i,j) &  je hodnota pixelu rekonstruovaného obrazu na pozici $(i, j)$ \\
+    m &  je počet řádků obrazu \\
+    n &  je počet sloupců obrazu
+\end{conditions}
+
+\subsubsection{Structural Similarity Index (SSIM)}
+Structural Similarity Index (SSIM) je další důležitá metrika pro posouzení kvality obrazu. Na rozdíl od tradičních metrik, jako jsou MSE nebo PSNR, je SSIM navržen tak, aby lépe korespondoval s lidským vizuálním vnímáním kvality obrazu. Hodnotí kvalitu obrazu na základě tří klíčových aspektů: jasu, kontrastu a struktury (uspořádní pixelů v obraze s důrazem na vzory a textury). SSIM hodnotí podobnost mezi dvěma snímky porovnáním jejich strukturálních informací, což je klíčový faktor při určování vnímané kvality obrazu. \cite{PSNRSSIM}
+
+SSIM je definováno vzorcem níže:
+\begin{equation}
+    \text{SSIM}(x, y) = \frac{(\mu_x \mu_y + C_1)(2\sigma_{xy} + C_2)}{(\mu_x^2 + \mu_y^2 + C_1)(\sigma_x^2 + \sigma_y^2 + C_2)}
+\end{equation}
+\begin{conditions}
+    \mu_x &  je průměr x \\
+    \mu_y &  je průměr y \\
+    \sigma_x^2 &  je variance x \\
+    \sigma_y^2 &  je variance y \\
+    \sigma_{xy} &  je kovariance mezi x a y \\
+    C_1 &  je konstanta stabilizující dělení, pokud jsou průměry blízké nule \\
+    C_2 &  je konstanta stabilizující dělení, pokud jsou variance blízké nule
+\end{conditions}
+
+\subsection{Výsledky neuronových sítí DnCNN a DAE při redukování šumu v rentgenových snímcích}
+Pro vyhodnocení výkonu natrénovaných modelů neuronových sítí je nezbytné stanovit kvalitu samotných zašuměných snímků v porovnání s jejich originálními protějšky. Tato základní úroveň pomáhá pochopit rozsah zlepšení dosaženého modely pro odstranění šumu. Průměrná hodnota naměřené metriky PSNR pro zašuměné snímky je zhruba 25dB a průměrná hodnota SSIM vychází přibližně 60\%.
+
+\subsubsection{Vyhodnocení natrénovaných modelů sítě DnCNN}
+Modely trénované na architektuře DnCNN, byly velmi úspěšné při odstraňování šumu a značně vylepšily kvalitu daných rentgenových snímků. Model s nejlepšími výsledky byl trénován po dobu 55 epoch a dosáhl průměrného PSNR 31dB a SSIM 91\%, což ukazuje podstatné zvýšení měřených metrik jak v redukci šumu, tak ve strukturální podobnosti. Model byl trénován na snímcích z obou datových sad, protože základní charakteristiky šumu rentgenových snímků nevyžadují rozlišování mezi rentgenovými snímky plic nebo zubů. Na snímcích \ref{fig:DnCNN_lungs} a \ref{fig:DnCNN_teeth} je ukázán příklad použití nejlepšího natrénovaného modelu. Z ukázky je patrné, že došlo k velmi účinné redukci šumu se zachováním podstatných detailů.
+
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\linewidth]{Prilohy/Obrazky/DAE_UML.png}
-    \caption{Diagram zobrazující architekturu denoising autoenkodéru. (vytvořeno v \cite{DrawIO})}
-    \label{fig:DAE}
+    \includegraphics[width=\linewidth]{Prilohy/Obrazky/DnCNN_lungs.png}
+    \caption{Ukázka odstranění šumu ze snímku plic pomocí DnCNN}
+    \label{fig:DnCNN_lungs}
 \end{figure}
 
-% Metriky pro zhodnocení modelů:
-% Define and explain the metrics used to evaluate the models (e.g., PSNR, SSIM).
-% Justify the choice of these metrics and how they relate to the task of denoising.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\linewidth]{Prilohy/Obrazky/DnCNN_teeth.png}
+    \caption{Ukázka odstranění šumu ze snímku zubů pomocí DnCNN}
+    \label{fig:DnCNN_teeth}
+\end{figure}
 
-% Výsledky neuronových sítí DnCNN a DAE při redukci šumu z rentgenových snímků:
-% Present the results obtained from training and evaluating both models.
-% Use tables and graphs to compare the performance of DnCNN and DAE.
-% Discuss the results, highlighting strengths and weaknesses of each model.
-% Mention any insights gained from the experiments and how they can inform future work.
+\subsubsection{Vyhodnocení natrénovaných modelů sítě DAE}
+Následně byla hodnocena výkonnost autoenkodér pro redukci šumu (DAE), což je složitý model s přibližně 10 miliony parametry. Než jsem dospěl k nejlepšímu modelu, bylo nutné vytvořit několik variant základní architektury DAE. Nejdříve jsem zkoušel jednoduchou síť s pár vrstvami bez použití skip connections. Tento model ovšem nebyl úspěšný. Další model byl navržen v podobném duchu jako DnCNN a jeho úkolem bylo detekovat šum, nikoli tvořit nový odšuměný snímek. To se také ukázalo jako liché a nejlepší model byl natrénován za pomocí architektury popsané výše. Přes svůj potenciál model DAE nedosáhl tak dobrých výsledků jako DnCNN. Tento suboptimální výkon je přičítán složitosti modelu a omezenému množství tréninkových dat, což vedlo k přeučení po zhruba 30 epochách u nejlepšího modelu. DAE dosáhl průměrného PSNR kolem 22dB, což znamená sníženou účinnost při odstraňování šumu ve srovnání s DnCNN. Nicméně hodnota SSIM pro DAE byla 71\%, což je hodnota nižší v porovnání s DnCNN, stále ale představuje přiměřenou strukturální podobnost.
 
 % TODO: Přidat obrázky jako ukázku, co vystupuje z těch modelů
-
-\subsection{Metriky pro zhodnocení modelů}
-
-\subsection{Výsledky neuronových sítí DnCNN a DAE při redukci šumu z rentgenových snímků}
-
 
 \section{Aplikace implementovaných metod a měření vlivu předzpracování na efektivitu učení segmentačních modelů}
 
