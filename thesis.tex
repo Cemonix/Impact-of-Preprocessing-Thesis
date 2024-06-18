@@ -928,8 +928,7 @@ V tomto projektu jsem použil několik důležitých knihoven. Nejvýznamnějš�
     \textbf{numba}          & Knihovna pro akceleraci numerických výpočtů.            \\ \hline
     \end{tabular}
     \caption{Přehled použitých knihoven}
-    \label{tab
-    }
+    \label{tab:Used_libs}
 \end{table}
 
 \subsubsection{Struktura projektu}
@@ -1171,7 +1170,7 @@ Enkodér komprimuje vstupní obraz do nižší dimenzionální reprezentace pomo
 
 Architektura DAE je detailně znázorněna na diagramu \ref{fig:DAE}. Diagram ilustruje, jak jsou jednotlivé vrstvy enkodéru a dekodéru propojeny a také znázorňuje předávání dodatečných informací prostřednictvím skip connections. Enkodér začíná s konvoluční vrstvou s 64 filtry a postupně zvyšuje počet filtrů až na 512, zatímco dekodér postupně generuje obraz zpět do jeho původního rozlišení pomocí dekonvolučních vrstev. Níže je uvedena konkrétní implementace tříd autoenkodéru pro redukci šumu.
 
-\begin{figure}[ht]
+\begin{figure}[h]
     \centering
     \includegraphics[width=\linewidth]{Prilohy/Obrazky/DAE_UML.png}
     \caption{Diagram zobrazující architekturu denoising autoenkodéru. (vytvořeno v \cite{DrawIO})}
@@ -1324,14 +1323,14 @@ Pro vyhodnocení výkonu natrénovaných modelů neuronových sítí je nezbytn�
 \subsubsection{Vyhodnocení natrénovaných modelů sítě DnCNN}
 Modely trénované na architektuře DnCNN, byly velmi úspěšné při odstraňování šumu a značně vylepšily kvalitu daných rentgenových snímků. Model s nejlepšími výsledky byl trénován po dobu 55 epoch a dosáhl průměrného PSNR 31dB a SSIM 91\%, což ukazuje podstatné zvýšení měřených metrik jak v redukci šumu, tak ve strukturální podobnosti. Model byl trénován na snímcích z obou datových sad, protože základní charakteristiky šumu rentgenových snímků nevyžadují rozlišování mezi rentgenovými snímky plic nebo zubů. Na snímcích \ref{fig:DnCNN_lungs} a \ref{fig:DnCNN_teeth} je ukázán příklad použití nejlepšího natrénovaného modelu. Z ukázky je patrné, že došlo k velmi účinné redukci šumu se zachováním podstatných detailů.
 
-\begin{figure}[ht]
+\begin{figure}[h]
     \centering
     \includegraphics[width=\linewidth]{Prilohy/Obrazky/DnCNN_lungs.png}
     \caption{Ukázka odstranění šumu ze snímku plic pomocí DnCNN}
     \label{fig:DnCNN_lungs}
 \end{figure}
 
-\begin{figure}[ht]
+\begin{figure}[h]
     \centering
     \includegraphics[width=\linewidth]{Prilohy/Obrazky/DnCNN_teeth.png}
     \caption{Ukázka odstranění šumu ze snímku zubů pomocí DnCNN}
@@ -1339,17 +1338,121 @@ Modely trénované na architektuře DnCNN, byly velmi úspěšné při odstraňo
 \end{figure}
 
 \subsubsection{Vyhodnocení natrénovaných modelů sítě DAE}
-Následně byla hodnocena výkonnost autoenkodér pro redukci šumu (DAE), což je složitý model s přibližně 10 miliony parametry. Než jsem dospěl k nejlepšímu modelu, bylo nutné vytvořit několik variant základní architektury DAE. Nejdříve jsem zkoušel jednoduchou síť s pár vrstvami bez použití skip connections. Tento model ovšem nebyl úspěšný. Další model byl navržen v podobném duchu jako DnCNN a jeho úkolem bylo detekovat šum, nikoli tvořit nový odšuměný snímek. To se také ukázalo jako liché a nejlepší model byl natrénován za pomocí architektury popsané výše. Přes svůj potenciál model DAE nedosáhl tak dobrých výsledků jako DnCNN. Tento suboptimální výkon je přičítán složitosti modelu a omezenému množství tréninkových dat, což vedlo k přeučení po zhruba 30 epochách u nejlepšího modelu. DAE dosáhl průměrného PSNR kolem 22dB, což znamená sníženou účinnost při odstraňování šumu ve srovnání s DnCNN. Nicméně hodnota SSIM pro DAE byla 71\%, což je hodnota nižší v porovnání s DnCNN, stále ale představuje přiměřenou strukturální podobnost.
+Následně byla hodnocena výkonnost autoenkodér pro redukci šumu (DAE), což je složitý model s přibližně 10 miliony parametry. Než jsem dospěl k nejlepšímu modelu, bylo nutné vytvořit několik variant základní architektury DAE. Nejdříve jsem zkoušel jednoduchou síť s pár vrstvami bez použití skip connections. Tento model ovšem nebyl úspěšný. Další model byl navržen v podobném duchu jako DnCNN a jeho úkolem bylo detekovat šum, nikoli tvořit nový odšuměný snímek. To se ovšem ukázalo jako liché a tento přístup také nebyl úspěšný. Nejlepší model byl natrénován pomocí architektury nastíněné výše s využitím augmentací popsaných v tabulce \ref{tab:DAE_augmentation}. Přes svůj potenciál architektura DAE nedosáhla tak dobrých výsledků jako DnCNN. Tento suboptimální výkon je přičítán složitosti modelu a omezenému množství tréninkových dat, což vedlo k přeučení po zhruba 30 epochách u nejlepšího modelu. DAE dosáhl průměrného PSNR kolem 22dB, což znamená sníženou účinnost při odstraňování šumu ve srovnání s DnCNN. Nicméně hodnota SSIM pro DAE byla 71\%, což je hodnota nižší v porovnání s DnCNN, stále ale představuje přiměřenou strukturální podobnost.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|l|l|}
+    \hline
+    \textbf{Augmentace}  & \textbf{Popis}                            & \textbf{Pravděpodobnost}  \\ \hline
+    Gaussovský blur      & Aplikuje Gaussovské rozostření.           &  20\%                     \\ \hline
+    Ostrost obrazu       & Upravuje ostrost obrazu.                  &  20\%                     \\ \hline
+    Autokontrast         & Automaticky vyrovnává kontrast snímků.    &  30\%                     \\ \hline
+    Ekvalizace           & Ekvalizace histogramu.                    &  40\%                     \\ \hline
+    Horizontální otočení & Horizontální překlopení snímku.           &  50\%                     \\ \hline
+    \end{tabular}
+    \caption{Přehled augmentací aplikovaných při učení DAE}
+    \label{tab:DAE_augmentation}
+\end{table}
 
 % TODO: Přidat obrázky jako ukázku, co vystupuje z těch modelů
 
-\section{Aplikace implementovaných metod a měření vlivu předzpracování na efektivitu učení segmentačních modelů}
+\section{Aplikace implementovaných metod a měření vlivu předzpracování na efektivitu segmentačních modelů}
+V této sekci se zaměřím na měření vlivu předzpracování na efektivitu segmentačních modelů. Při popisování struktury projektu již zazněl název architektury, na které bude vliv předzpracování měřen. Jedná se o široce používanou architekturu v oblasti segmentace medicínských dat, nesoucí název U-Net. Podrobné informace o architektuře sítě U-Net lze nalézt v článku Ronnebergera a kol. (2015) \cite{UNET_paper}.
 
-% Popsat Unet + jaccard index
+Pro vyhodnocení efektivity natrénovaných segmentačních modelů jsem používal metriku Jaccard index, někdy nazývanou také jako Intersection over union (IoU). Tato metrika se mi velmi osvědčila při měření výkonu segmentačních modelů u jiných projektů, a proto byla zvolena hlavním měřítkem, které udává jaký vliv má předzpracování na učení sítě U-net. Tato metrika je definována jako velikost oblasti průniku segmentačních masek dělená velikostí jejich sjednocením predikované segmentační masky vůči originální. Právě z podstaty měření přesného překrytí pixelů predikované a originální masky, je Jaccard index velmi účinnou metrikou pro měření výkonu segmentačních modelů. Matematicky lze tento vztah vyjádřit následovně:
+
+\begin{equation}
+    \text{Jaccard index (IoU)}(A, B) = \frac{|A \cap B|}{|A \cup B|}
+\end{equation}
+\begin{conditions}
+    A & množina predikovaných pixelů \\
+    B & množina pixelů v originální masce \\
+\end{conditions}
+
+Segmentační modely sítě U-Net jsem trénoval na několika datových sadách. Nejdříve jsem natrénoval a změřil výkon modelu na originálních nezašuměných datech. Tento model sloužil pro porovnání vlivu předzpracování a jednalo se o vrchol možného zlepšení dalších modelů. Dále jsem použil pro trénování datovou sadu zašuměných snímků, která představovala pravý opak prvního natrénovaného modelu. Jinými slovy mělo jít o nejhorší model, který jsem se poté snažil vylepšit pomocí technik pro předzpracování snímků. Abych mohl trénovat modely využívající metody předzpracování, tak jsem vytvořil celkem šest datových sad, rozdělených po dvojicích. Každá první datová sada z dvojice zahrnovala snímky plic a druhá snímky zubů upravených pomocí sítě DnCNN, DAE a ensemble avering techniky.
+
+Před samotným měřením vlivu předzpracování na segmentační modely, je důležité pochopit, jak různé přístupy k předzpracování ovlivňují kvalitu segmentace při různých problémech. Jak již bylo popsáno v sekci zaměřené na popis datových sad, je pro tento účel nutné rozlišovat mezi jednoduššími a složitějšími úlohami segmentace. Proto jsou v následujících podsekcích uvedeny výsledky měření pro dvě odlišné úlohy: binární segmentace rentgenových snímků plic a vícetřídní segmentace rentgenových snímků zubů. Tato rozdělení umožňují detailně posoudit efektivitu jednotlivých metod předzpracování v různých kontextech.
+
+\subsection{Měření vlivu předzpracování na binární segmentaci rentgenových snímků plic}
+Pro měření vlivu předzpracování dat bylo trénováno několik různých kombinací modelů, které měli odhalit, zda a jaký má předzpracování dopad na průběh trénování a výkon jednotlivých modelů. Modelů bylo trénováno několik s odlišnými hyperparametry a s aplikací augmentačních technik. Už u prvních modelů bylo patrné, že úloha segmentace plic není obtížná a architektura U-Net si dokáže poradit se znehodnocenými snímky s přidaným šumem. I doba učení se téměř neměnila a všechny učené modely bylo dotrénovány přibližně kolem 30 epochy. 
+
+Navzdory různým nastavením hyperparametrů a aplikaci augmentačních technik všechny modely vykazovaly známky přeučení přibližně po zmíněných 30 epochách. To naznačuje, že problém binární segmentace snímků plic je relativně jednoduchý a model U-Net je schopen detekovat okraje plic i přes vrstvu šumu bez potřeby intenzivního předzpracování.
+
+Níže je uvedena tabulka \ref{tab:BinaryUnetResults}, která zobrazuje výsledky pěti nejlépe natrénovaných modelů, včetně jejich dosažených hodnot Jaccard indexu:
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|c|}
+        \hline
+        \textbf{Model}                            & \textbf{Jaccard Index} \\ \hline
+        U-Net (Originální snímky)                 & 90.2\%                 \\ \hline
+        U-Net (Předzpracování Ensemble Averaging) & 89.7\%                 \\ \hline
+        U-Net (Předzpracování DnCNN)              & 89.5\%                 \\ \hline
+        U-Net (Předzpracování DAE)                & 89.3\%                 \\ \hline
+        U-Net (Zašuměná data)                     & 87.5\%                 \\ \hline
+    \end{tabular}
+    \caption{Výsledky nejlepších modelů U-Net pro binární segmentaci rentgenových snímků plic.}
+    \label{tab:BinaryUnetResults}
+\end{table}
+
+Tato tabulka ukazuje, že i model trénovaný na zašuměných datech dosáhl Jaccard indexu blízkého 90\%, což potvrzuje hypotézu, že tato segmentační úloha je natolik jednoduchá, že model U-Net je schopen efektivně detekovat okraje plic i bez výrazného vlivu předzpracování dat. Tento výsledek podtrhuje robustnost a schopnost U-Net architektury vyrovnat se s jednoduchými segmentačními úlohami i za podmínek přítomnosti šumu.
+
+% \begin{figure}[ht]
+%     \centering
+%     \includegraphics[width=\linewidth]{Prilohy/Obrazky/Unet_lungs_original.png}
+%     \caption{Segmentace snímku plic pomocí U-Net (originální snímek)}
+%     \label{fig:BinaryUnetOriginal}
+% \end{figure}
+    
+% \begin{figure}[ht]
+%     \centering
+%     \includegraphics[width=\linewidth]{Prilohy/Obrazky/Unet_lungs_denoised.png}
+%     \caption{Segmentace plicního snímku pomocí U-Net (předzpracování pomocí DnCNN)}
+%     \label{fig:BinaryUnetDnCNN}
+% \end{figure}
+
+\subsection{Měření vlivu předzpracování na vícetřídní segmentaci rentgenových snímků zubů}
+Měření vlivu předzpracování v předchozí části nepřineslo velmi zajímavé výsledky. Tato podsekce se zaměří na mnohem komplexnější problém, konkrétně vícetřídní klasifikaci 32 zubů, na které by se vliv předzpracování mohl projevit mnohem znatelněji.
+
+Stejně jako v předešlé části bylo trénováno několik variant modelů, počínaje modelem trénovaným na originálních datech, modelem trénovaným na zašuměných datech a modelech využivajících odšuměná data. Nejlépší model U-Net dosáhl na originálních snímcích pouze 65\% Jaccard indexu, což jasně značí rozdíl náročnosti segmentace na rozdíl od snímků plic. Na zašuměných snímcích byla hodnota Jaccard indexu mnohem nižší, konkrétně 55\%. Z výsledku je patrné, že šum velmi ztížil modelu schopnost rozpoznat zuby ve snímku a správně je segmentovat.
+
+Výsledky technik pro předzpracování byly velmi zajímavé. Předzpracování pomocí modelu architektury DnCNN dosáhlo Jaccardova indexu přibližně 64\%, což je srovnatelné s výsledky na originálních snímcích. Je tedy vidět, že předzpracování obrazu má znatelný dopad na schopnost sítě U-Net segmentovat objekty. Model, využívající snímky předzpracované pomocí DAE dosáhl Jaccardova indexu pouhých 58\%, což je mírné zlepšení oproti zašuměným snímkům, avšak nižší v porovnání s DnCNN. Pravděpodobně tato složitější architektura nebyla vystavena dostatečnému množství trénovacích dat. Nejlepších výsledků bylo dosaženo pomocí techniky ensemble averaging, která dosáhla Jaccardova indexu 65\%. Tento výsledek je pozoruhodný, neboť překonal nejlepší model trénovaný na originálních snímcích. Tento výsledek by mohl naznačovat, že metody pro předzpracování snímků použité v ensemble averaging by mohly nejen odstranit šum přidaný do snímků uměle, ale také mohly zlepšit kvalitu samotných originálních snímků. Výsledný rozdíl je ale velmi nepatrný a jelikož je učení modelů nedeterministické, nejspíše se jedná pouze o náhodu.
+
+Níže je uvedena tabulka \ref{tab:MulticlassUnetResults}, která zobrazuje výsledky pěti nejlépe natrénovaných modelů:
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|c|}
+        \hline
+        \textbf{Model}                            & \textbf{Jaccard Index} \\ \hline
+        U-Net (Předzpracování Ensemble Averaging) & 65.5\%                 \\ \hline
+        U-Net (Originální snímky)                 & 65.2\%                 \\ \hline
+        U-Net (Předzpracování DnCNN)              & 64.8\%                 \\ \hline
+        U-Net (Předzpracování DAE)                & 58.3\%                 \\ \hline
+        U-Net (Zašuměná data)                     & 55.4\%                 \\ \hline
+    \end{tabular}
+    \caption{Výsledky nejlepších modelů U-Net pro binární segmentaci rentgenových snímků plic.}
+    \label{tab:MulticlassUnetResults}
+\end{table}
+
+Z tabulky je patrné, že předzpracování vhodnou metodou má výrazný vliv na výkon modelů pro segmentaci zubů. Tyto výsledky naznačují, že u složitějších úloh může být předzpracování přínosné a může zlepšit výkonnost trénovaných modelů.
+
+% \begin{figure}[ht]
+%     \centering
+%     \includegraphics[width=\linewidth]{Prilohy/Obrazky/Unet_lungs_original.png}
+%     \caption{Segmentace snímku zubů pomocí U-Net (originální snímek)}
+%     \label{fig:MulticlassUnetOriginal}
+% \end{figure}
+    
+% \begin{figure}[ht]
+%     \centering
+%     \includegraphics[width=\linewidth]{Prilohy/Obrazky/Unet_lungs_denoised.png}
+%     \caption{Segmentace snímku zubů pomocí U-Net (předzpracování pomocí DnCNN)}
+%     \label{fig:MulticlassUnetDnCNN}
+% \end{figure}
+
 % Ukázat výsledky unetu bez udělání preprocessingu
-% Pak udělat kombinace, unet + klasika, unet + dncnn, unet + dae, a jiné kombinace - popsat, tabulky, atd
-
-% UML diagram pro nastínění pipeliny, přidat obrázky z mlflow a výsledné predikce
 
 \chapter{Zhodnocení} 
 
@@ -1380,6 +1483,7 @@ Následně byla hodnocena výkonnost autoenkodér pro redukci šumu (DAE), což 
 %V každém případě by to však měli být pouze materiály, které jste vytvořili sami. Materiály jiných autorů uvádějte v seznamu použité %literatury (včetně případných odkazů na jejich originální umístění).
 
 %V této kapitole stačí uvést pouze základní strukturu úložiště (co se kde nalézá a jakou má funkci) například v podobě tabulky. 
+
 Struktura repozitáře je následující:
 \begin{longtable}{ll}
 \hline
