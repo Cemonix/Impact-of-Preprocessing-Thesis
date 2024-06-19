@@ -243,7 +243,7 @@ V Ústí nad Labem dne \today   \hfill Podpis: \makebox[4cm][s]{\dotfill}
 
 \textbf{Abstrakt:}
 
-Hlavním cílem této diplomové práce je seznámit čtenáře s 
+Hlavním cílem této diplomové práce je změřit vliv předzpracování obrazu a augmentace dat na segmentaci rentgenových snímků. Čtenář je nejdříve seznámen se standardními algoritmy pro vylepšení obrazu a redukci šumu. Dále jsou v práci představeny neuronové sítě a základní principy fungování společně s implementací vybraných architektur pro redukci šumu. V neposlední řadě jsou popsané metody aplikovány na rentgenové snímky dvou datových sad a je měřena výkonnost a efektivita modelů pro segmentaci obrazu v závislosti na předchozím zpracování dat.
 
 \textbf{Klíčová slova:} Předzpracování obrazu, Neuronové sítě, Segmentace obrazu, U-Net
 
@@ -254,7 +254,7 @@ Hlavním cílem této diplomové práce je seznámit čtenáře s
 
 \textbf{Abstract:}
 
-lorem ipsum dolor sit amet
+The main objective of this thesis is to measure the impact of image preprocessing and data augmentation on the segmentation of X-ray images. The reader is first introduced to standard algorithms for image enhancement and noise reduction. Furthermore, neural networks and the basic principles of their operation are presented, along with the implementation of selected architectures for noise reduction. Finally, the described methods are applied to X-ray images from two datasets, and the performance and efficiency of the image segmentation models are measured depending on the prior data processing.
 
 \textbf{Keywords:} Image preprocessing, Neural networks, Image segmentation, U-Net
 
@@ -331,13 +331,15 @@ Jedním z klíčů k úspěšnému zlepšení obrazu je výběr vhodné metody a
 \subsubsection{Ekvalizace histogramu}
 Ekvalizace histogramu je fundamentální, ale mocná technika, která se používá pro zlepšení kontrastu v obrazových datech, zejména tam, kde původní obraz obsahuje špatně rozlišitelné detaily kvůli nedostatečnému rozsahu intenzit pixelů.
 
-Cílem ekvalizace histogramu je aplikovat transformaci na původní histogram obrazu, $H(i)$, kde $i$ představuje intenzitu pixelů v původním obrazu, tak, aby výsledný histogram měl uniformní rozložení. Tato transformace je založena na kumulativní distribuční funkci (CDF), $CDF(i)$, vypočítané z původního histogramu. $CDF(i)$ představuje součet pravděpodobností všech intenzit pixelů od nejnižší hodnoty až po intenzitu $i$ a slouží jako mapovací funkce pro přiřazení nových intenzit pixelů ve výsledném obraze. Matematicky lze CDF definovat jako CDF(j) = $\sum_{i=0}^{j} P(i)$, kde $P(j)$ je pravděpodobnost výskytu intenzity $j$ v původním obrazu, což se obvykle určí normalizací histogramu na celkový počet pixelů v obrazu. Nová intenzita pixelu $i'$ pro každý pixel s původní intenzitou $i$ ve výsledném obrazu je poté určena pomocí normalizované CDF, což zajišťuje, že všechny intenzity jsou rovnoměrně zastoupeny:
+Cílem ekvalizace histogramu je aplikovat transformaci na původní histogram obrazu, $H(i)$, kde $i$ představuje intenzitu pixelů v původním obrazu, tak, aby výsledný histogram měl uniformní rozložení. Tato transformace je založena na kumulativní distribuční funkci (CDF), $CDF(i)$, vypočítané z původního histogramu. $CDF(i)$ představuje součet pravděpodobností všech intenzit pixelů od nejnižší hodnoty až po intenzitu $i$ a slouží jako mapovací funkce pro přiřazení nových intenzit pixelů ve výsledném obraze. Matematicky lze CDF definovat jako $CDF(j) = \sum_{i=0}^{j} P(i)$, kde $P(j)$ je pravděpodobnost výskytu intenzity $j$ v původním obrazu, což se obvykle určí normalizací histogramu na celkový počet pixelů v obrazu. Nová intenzita pixelu $i'$ pro každý pixel s původní intenzitou $i$ ve výsledném obrazu je poté určena pomocí normalizované CDF, což zajišťuje, že všechny intenzity jsou rovnoměrně zastoupeny:
+
 \begin{equation}
     i' = (L-1) \cdot CDF(i)
 \end{equation}
 \begin{conditions}
-    L &  je počet možných úrovní intenzity pixelů (např. $L = 256$ pro 8bitové obrazy)
+    L & počet možných úrovní intenzity pixelů (např. $L = 256$ pro 8 bitové obrazy)
 \end{conditions}
+
 Tímto způsobem transformace zvýší kontrast obrazu tak, že "roztáhne" rozložení intenzit pixelů přes celý dostupný rozsah, což zvýrazní detaily a zlepší vizuální vnímání obrazu. Ekvalizace histogramu tak přináší výrazné zlepšení v oblastech s nízkým kontrastem a umožňuje lepší vizualizaci detailů, což je zásadní pro dalšího zpracování obrazu. \cite{ComputerVisionMetrics} \cite{ComputerVisionForX-RayTesting}
 
 \begin{algorithm}
@@ -368,12 +370,23 @@ Jedním z klíčových aspektů CLAHE je výběr „clip limitu“, což je para
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\linewidth]{Prilohy/Obrazky/ImageEnhancement.png}
-    \caption{Ukázka metod ekvalizace histogramu na rentgenovém snímku. CLAHE demonstruje lepší zachování detailů a kontrastu v porovnání s tradiční ekvalizací histogramu.}
+    \caption{Ukázka metod ekvalizace histogramu na rentgenovém snímku. CLAHE demonstruje lepší zachování detailů a kontrastu v porovnání s tradiční ekvalizací histogramu. (zdrojový snímek převzat z datasetu \cite{LungDataset})}
     \label{fig:histogram_equalization}
 \end{figure}
 
 \subsubsection{Unsharp masking}
-Unsharp masking je technika určená k zlepšení ostrosti obrazu tím, že zvýrazňuje hrany a detaily, které jsou v původním obrazu méně patrné. Klíčovým krokem této metody je vytvoření tzv. masky ostrých detailů, která vznikne odečtením rozmazané verze obrazu od jeho původní podoby. Rozmazaná verze obrazu se získává například pomocí Gaussova filtru, který je aplikován na původní obraz. Intenzita tohoto rozmazání určuje, jak silně budou hrany a detaily v masce zvýrazněny. Následující rovnice ukazuje získání výsledného, zaostřeného snímku pomocí techniky unsharp masking. Po získání masky ostrých detailů se tato maska přičte zpět k původnímu obrazu. Tento krok zvyšuje kontrast a ostrost obrazu, přičemž zvýrazňuje oblasti s výraznými rozdíly mezi sousedními pixely. \cite{UnsharpMasking}
+Unsharp masking je technika určená k zlepšení ostrosti obrazu tím, že zvýrazňuje hrany a detaily, které jsou v původním obrazu méně patrné. Klíčovým krokem této metody je vytvoření tzv. masky ostrých detailů, která vznikne odečtením rozmazané verze obrazu od jeho původní podoby. Rozmazaná verze obrazu se získává například pomocí Gaussova filtru, který je aplikován na původní obraz. Intenzita tohoto rozmazání určuje, jak silně budou hrany a detaily v masce zvýrazněny. Následující rovnice \ref{eq:unsharp_masking} ukazuje získání výsledného, zaostřeného snímku pomocí techniky unsharp masking. Po získání masky ostrých detailů se tato maska přičte zpět k původnímu obrazu. Tento krok zvyšuje kontrast a ostrost obrazu, přičemž zvýrazňuje oblasti s výraznými rozdíly mezi sousedními pixely. \cite{UnsharpMasking}
+
+\begin{equation}
+    I_{\text{zaostřený}} = I_{\text{original}} + \lambda \cdot (I_{\text{original}} - I_{\text{rozmazaný}})
+    \label{eq:unsharp_masking}
+\end{equation}
+\begin{conditions}
+    I_{\text{original}} & původní obraz \\
+    I_{\text{rozmazaný}} & rozmazaná verze původního obrazu \\
+    \lambda & faktor určující intenzitu zostření
+\end{conditions}
+
 
 \begin{algorithm}
     \caption{Unsharp Masking}
@@ -452,7 +465,7 @@ Pro efektivní redukci šumu ve snímcích jsou k dispozici různé typy filtrů
         K(i, j) & koeficienty kernelu \\
         I(x-i, y-j) & intenzita pixelu v původním snímku v okolé pixelu (x, y) 
     \end{conditions}
-    \item \textbf{Nelineární filtrování} je alternativní přístup k redukci šumu, který se zaměřuje na zachování hran a detailů v obraze. Nelineární filtry jsou schopny zacházet s nelineárními vztahy mezi pixely a jsou schopny lépe zachovat důležité strukturální vlastnosti obrazu. Nelineární filtry jsou proto obzvláště účinné při redukci impulzního či spekle šumu. \cite{ImageDenoisingTechniques, XRayImageProcessing}
+    \item \textbf{Nelineární filtrování} je alternativní přístup k redukci šumu, který se zaměřuje na zachování hran a detailů v obraze. Nelineární filtry jsou schopny zacházet s nelineárními vztahy mezi pixely a jsou schopny lépe zachovat důležité strukturální vlastnosti obrazu. Nelineární filtry jsou proto obzvláště účinné při redukci impulzního či speckle šumu. \cite{ImageDenoisingTechniques, XRayImageProcessing}
 \end{itemize}
 
 \subsubsection{Gaussovský filtr}
@@ -485,11 +498,11 @@ Přestože je Gaussovský filtr velmi účinný při redukci šumu, volba směro
 \end{algorithm}
 
 \subsubsection{Bilaterální filtr}
-Bilaterální filtrování je nelineární technika pro vyhlazování obrazu, která zachovává hrany a redukuje šum. Na rozdíl od tradičních lineárních filtrů, které aplikují uniformní konvoluci napříč obrazem, bilaterální filtr kombinuje dva hlavní koncepty: prostorovou blízkost a podobnost intenzity. 
+Bilaterální filtrování je nelineární technika pro vyhlazování obrazu, která zachovává hrany a redukuje šum (metoda se specializuje na redukci Gaussovského šumu). Na rozdíl od tradičních lineárních filtrů, které aplikují uniformní konvoluci napříč obrazem, bilaterální filtr kombinuje dva hlavní koncepty: prostorovou blízkost a podobnost intenzity. 
 
 Podobně jako Gaussův filtr, bilaterální filtr používá Gaussovu funkci k vážení pixelů založeně na jejich prostorové vzdálenosti od centrálního pixelu. Tím pádem, čím jsou pixely blíže k centrálnímu pixelu, tím větší váhu mají. Unikátní pro bilaterální filtr je fakt, že váhy jsou také přizpůsobeny na základě rozdílu intenzit mezi sousedními pixely a centrálním pixelem. Pixely s podobnou intenzitou jako centrální pixel získávají vyšší váhu, což umožňuje zachování ostrých hran a detailů. Pro každý pixel ve zpracovávaném obrazu filtr vyhodnotí jeho sousedy a aplikuje váhy založené na dvou zmíněných kritériích.\cite{BilateralFilter}
 
-Matematický vzorec pro bilaterální filtr aplikovaný na pixel p v obrazu I lze vyjádřit jako:
+Matematický vzorec pro bilaterální filtr aplikovaný na obraz lze vyjádřit jako:
 \begin{equation}
     BF[I](p) = \frac{1}{W_p} \sum_{q \in S} G_{\sigma_s}(||p-q||) \cdot G_{\sigma_r}(|I_p - I_q|) \cdot I_q
 \end{equation}
@@ -498,6 +511,7 @@ Matematický vzorec pro bilaterální filtr aplikovaný na pixel p v obrazu I lz
     W_p & je normalizační faktor zajišťující, že součet vah je roven jedné \\
     G_{\sigma_s} & prostorová Gaussova funkce, která snižuje vliv vzdálených pixelů na základě prostorové vzdálenosti ||p-q|| se standardní odchylkou $\sigma_s$ \\
     G_{\sigma_r} & rozsahová Gaussova funkce, která redukuje vliv pixelů q na základě rozdílu intenzit $|I_p-I_q|$ se standardní odchylkou $\sigma_r$ \\
+    S & sousední pixely zpracovávaného pixelu p \\
     I_p & hodnota pixelu p \\
     I_q & hodnota pixelu q \\
 \end{conditions}
@@ -546,15 +560,15 @@ Přestože je medianový filtr účinný, má svá omezení, zejména při vysok
 \subsubsection{Filtr ne-lokálních průměrů}
 Filtr ne-lokálních průměrů, anglicky Non-Local Means (NLM), představuje pokročilou techniku pro odstranění šumu z obrazu (převážně gaussovského šumu), která se vyznačuje výrazným zachováním detailů a hran. Na rozdíl od tradičních metod, které pracují s lokálními okolími pixelů, NLM vyhledává podobné fragmenty (patche) po celém obrazu a využívá jejich informace pro inteligentní vyhlazení cílového pixelu nebo oblasti, čímž se minimalizuje ztráta důležitých vizuálních prvků. NLM můžeme rozdělit na dvě varianty: pixelwise a patchwise NLM.
 
-První varianta, pixelwise NLM, se zaměřuje na každý pixel individuálně. Pro každý pixel p ve vstupním obraze 
-I se vypočítává jeho nová hodnota jako vážený průměr hodnot všech pixelů v obraze. Váhy závisí na podobnosti malých okolí (patchů) okolo každého pixelu a jsou určeny Euklidovskou vzdáleností mezi hodnotami pixelů v těchto okolích. Matematicky lze pixelwise NLM vyjádřit pomocí vztahu:
+První varianta, pixelwise NLM, se zaměřuje na každý pixel individuálně. Pro každý pixel $p$ ve vstupním obraze 
+$I$ se vypočítává jeho nová hodnota jako vážený průměr hodnot všech pixelů v obraze. Váhy závisí na podobnosti malých okolí (patchů) okolo každého pixelu a jsou určeny Euklidovskou vzdáleností mezi hodnotami pixelů v těchto okolích. Matematicky lze pixelwise NLM vyjádřit pomocí vztahu:
 
 \begin{equation}
     I_{new}(p) = \frac{\sum_{q \in I} w(p,q) \cdot I(q)}{\sum_{q \in I} w(p,q)}
 \end{equation}
 \begin{conditions}
-    w(p,q) & představuje váhu založenou na podobnosti mezi okolím pixelů p a q \\
-    I(q) & hodnota pixelu q ve vstupním obraze
+    w(p,q) & představuje váhu založenou na podobnosti mezi okolím pixelů $p$ a $q$ \\
+    I(q) & hodnota pixelu $q$ ve vstupním obraze
 \end{conditions}
 
 Druhá varianta, patchwise NLM, rozšiřuje přístup pixelwise metody tím, že jako základní jednotku pro výpočet váženého průměru bere celé patche namísto jednotlivých pixelů. Tím se zvyšuje robustnost metody vůči šumu, jelikož se lépe využívá strukturální informace z obrazu. Vztah pro patchwise NLM může být zapsán obdobně, avšak s důrazem na porovnávání celých patchů.
@@ -572,7 +586,7 @@ Nejdříve je nutné zjistit celkový součet intenzit pixelů v určitém oblas
 \end{equation}
 \begin{conditions}
     k & poloměr posuvného okna okolo středového pixelu \\
-    d(m, n) & hodnota pixelu na pozici (m, n)
+    d(m, n) & hodnota pixelu na pozici $(m, n)$
 \end{conditions}
 
 Dále se určí průměrná hodnota a lokální standardní odchylka hodnot pixelů v posuvném okně. Lokální průměr pomáhá rozlišit oblasti s vysokým a nízkým šumem tím, že poskytuje základní hodnotu pro porovnání s ostatními pixely. Standardní odchylka je míra variability nebo rozptylu hodnot pixelů kolem lokálního průměru, která pomáhá identifikovat pixely s výrazně odlišnými intenzitami (tj. šum).
@@ -627,12 +641,21 @@ Lokálně adaptivní mediánový filtr se ukazuje jako výrazně efektivní při
 
 Nicméně, stejně jako většina pokročilých metod zpracování obrazu, i tento filtr má své nevýhody. Především je to jeho výpočetní náročnost, která může být limitující pro aplikace v reálném čase nebo při zpracování velkých datasetů. Navíc, efektivní využití filtru vyžaduje pečlivý výběr parametrů, což může vyžadovat pokročilé znalosti a experimentální ladění pro dosažení optimálních výsledků. \cite{LocalAdaptiveMedianFilter}
 
-\begin{figure}[ht]
+\begin{figure}[h]
     \centering
     \includegraphics[width=\linewidth]{Prilohy/Obrazky/NoiseReduction.png}
-    \caption{Snímky demonstrují účinky popsaných filtrů na kvalitu obrazu v porovnání s originálním snímkem a snímkem po umělém přidání šumu, aby se simulovalo běžné zkreslení vznikající během akvizice obrazu.}
+    \caption{Snímky demonstrují účinky popsaných filtrů na kvalitu obrazu v porovnání s originálním snímkem a snímkem po umělém přidání šumu, aby se simulovalo běžné zkreslení vznikající během akvizice obrazu. (zdrojový snímek převzat z datasetu \cite{LungDataset})}
     \label{fig:noise_reduction_filters}
 \end{figure}
+
+\subsection{Výzvy a úskalí standardních metod}
+Standardní metody pro odstranění šumu mají několik omezení, která mohou ovlivnit jejich účinnost v reálných aplikacích. Tato omezení jsou důležitá pro pochopení, proč samotné použití těchto metod nemusí být vždy dostatečné a proč je třeba hledat pokročilejší přístupy.
+
+Většina standardních metod je navržena tak, aby se zaměřovala na specifické typy šumu. Například mediánový filtr je efektivní pro odstranění impulzního šumu, ale nemusí být účinný proti jiným typům. Toto zaměření na specifické typy šumu znamená, že pokud není typ šumu v obraze znám, může být obtížné vybrat správnou metodu pro jeho odstranění. V reálných aplikacích často není možné předem určit, jaký typ šumu bude v obraze přítomen, což výrazně omezuje účinnost těchto metod.
+
+Dalším problémem je přítomnost více typů šumu současně v jednom obraze. Například, lékařské snímky mohou obsahovat kombinaci šumu typu speckle, Poissonova šumu a dalších artefaktů. Standardní metody, které jsou navrženy pro odstranění jednoho typu šumu, nemusí být schopny efektivně zvládnout takovou kombinaci. Použití jedné metody může zlepšit jednu část obrazu, ale zároveň zhoršit jinou.
+
+Tento problém kombinace šumů vede k potřebě metod, které jsou schopny efektivně řešit více typů šumu současně, nebo metod, které kombinují výstupy různých filtrů pro dosažení lepších výsledků.
 
 % \subsection{Prahování a binarizace} TODO: if not enough pages write this as well
 
@@ -674,7 +697,7 @@ Základem neuronové sítě je její architektura, která je definována několi
     Adam a RMSprop jsou pokročilejší varianty, které se snaží zlepšit konvergenci SGD tím, že upravují rychlost učení pro každý parametr individuálně, což může vést k rychlejšímu a stabilnějšímu učení, zejména v komplexních sítích.
 \end{itemize}
 
-\begin{figure}[ht]
+\begin{figure}[h]
     \centering
     \includegraphics[width=\linewidth]{Prilohy/Obrazky/NNComponents.png}
     \caption{Ilustrace neuronové jednotky, ukazující základní komponenty jako vstup, váhy, bias, aktivační funkci a výstup. (převzato z \cite{NNComponentsIMG} pod licencí CC BY-SA 4.0)}
@@ -695,7 +718,7 @@ Operace konvoluce zahrnuje posunutí jádra (kernelu) přes vstupní data (obvyk
     \item \textbf{Mapa příznaků} Výstup operace konvoluce se nazývá mapa příznaků. Představuje odezvu filtru v každé prostorové poloze. Použitím různých filtrů může síť CNN zachytit širokou škálu aspektů vstupního obrazu.
 \end{itemize}
 
-Dalším důležitým konceptem v CNN je poolování, které se obvykle používá po operaci konvoluce. Nejběžnější formou sdružování je tzv. max pooling, kdy výstupem sdružovacího jádra je maximální hodnota z části mapy, kterou pokrývá. Tato operace snižuje dimenzionalitu mapy příznaků a umožňuje síti být odolnou vůči malým změnám vstupního obrazu.
+Dalším důležitým konceptem v CNN je tvz. pooling, které se obvykle používá po operaci konvoluce. Nejběžnější formou sdružování je tzv. max pooling, kdy výstupem sdružovacího jádra je maximální hodnota z části mapy, kterou pokrývá. Tato operace snižuje dimenzionalitu mapy příznaků a umožňuje síti být odolnou vůči malým změnám vstupního obrazu.
 
 V hlubokých konvolučních neuronových sítích se vrství několik konvolučních a sdružovacích vrstev za sebou, což síti umožňuje učit se hierarchické rysy. Nižší vrstvy se mohou naučit rozpoznávat jednoduché rysy, jako jsou hrany, zatímco hlubší vrstvy mohou interpretovat složité aspekty, jako jsou objekty.
 
@@ -723,16 +746,69 @@ Autoenkodéry se dělí na tři hlavní části:
 
 Autoenkodéry se používají v celé řadě aplikací, které přesahují rámec prosté komprese dat. Například při redukci šumu se naučí ignorovat náhodné odchylky ve vstupních datech a místo toho se soustředí na rekonstrukci smysluplného základního vzoru obrazu. Používají se také při detekci anomálií, kdy se naučí dobře reprodukovat typické případy dat, ale mají problémy s reprodukcí odlehlých hodnot, a tím identifikují anomální data. V oblasti zpracování obrazu se autoenkodéry také využívají pro segmentaci obrazu a extrakci rysů. Tyto schopnosti jsou klíčové pro rozpoznávání objektů a detailní analýzu obrazového obsahu. \cite{Autoencoders, AutoencodersIntroduction}
 
+\subsection{Metriky pro ohodnocení modelů}
+Aby bylo možné posoudit vliv předzpracování na segmentaci rentgenových snímků, bude nutné ohodnotit natrénované modely neuronových sítí. V této části budou popsány vybrané metriky sloužící právě pro ohodnocení natrénovaných modelů. Tyto metriky slouží k ohodnocení predikovaných výsledků vůči vstupním datům. Pro ohodnocení modelů popsaných v druhé části této práce jsem si jako hlavní metriky zvolil Peak Signal-to-Noise Ratio (PSNR) a Structural Similarity Index (SSIM) kvůli jejich efektivitě při měření kvality obrazu a pro měření vlivu předzpracování bude použita metrika nesoucí název Jaccard Index.
+
+\subsubsection{Peak Signal-to-Noise Ratio (PSNR)}
+Peak Signal-to-Noise Ratio (PSNR) je široce používaná metrika pro hodnocení kvality rekonstruovaných snímků v porovnání se vstupními daty. PSNR se vypočítává na základě průměrné kvadratické chyby (MSE) mezi původním a rekonstruovaným obrazem. Hodnota udávaná touto metrikou je měřena v decibelech a vyšší hodnota PSNR značí lepší kvalitu obrazu, protože znamená nižší chybu mezi porovnávanými obrazy. \cite{PSNRSSIM}
+
+Vzorec pro výpočet PSNR je definován následovně:
+\begin{equation}
+    \text{PSNR} = 10 \cdot \log_{10} \left( \frac{\text{MAX}^2}{\text{MSE}} \right)
+\end{equation}
+\begin{conditions}
+    MAX &  je maximální možná hodnota pixelu v daném snímku (např. pro 8bitové obrazy je $MAX = 255$) \\
+    MSE &  je průměrná kvadratická chyba
+\end{conditions}
+
+\begin{equation}
+    \text{MSE} = \frac{1}{mn} \sum_{i=0}^{m-1} \sum_{j=0}^{n-1} [I(i,j) - K(i,j)]^2
+\end{equation}
+\begin{conditions}
+    I(i,j) &  je hodnota pixelu původního obrazu na pozici $(i, j)$ \\
+    K(i,j) &  je hodnota pixelu rekonstruovaného obrazu na pozici $(i, j)$ \\
+    m &  je počet řádků obrazu \\
+    n &  je počet sloupců obrazu
+\end{conditions}
+
+\subsubsection{Structural Similarity Index (SSIM)}
+Structural Similarity Index (SSIM) je další důležitá metrika pro posouzení kvality obrazu. Na rozdíl od tradičních metrik, jako jsou MSE nebo PSNR, je SSIM navržen tak, aby lépe korespondoval s lidským vizuálním vnímáním kvality obrazu. Hodnotí kvalitu obrazu na základě tří klíčových aspektů: jasu, kontrastu a struktury (uspořádní pixelů v obraze s důrazem na vzory a textury). SSIM hodnotí podobnost mezi dvěma snímky porovnáním jejich strukturálních informací, což je klíčový faktor při určování vnímané kvality obrazu. \cite{PSNRSSIM}
+
+SSIM je definováno vzorcem níže:
+\begin{equation}
+    \text{SSIM}(x, y) = \frac{(\mu_x \mu_y + C_1)(2\sigma_{xy} + C_2)}{(\mu_x^2 + \mu_y^2 + C_1)(\sigma_x^2 + \sigma_y^2 + C_2)}
+\end{equation}
+\begin{conditions}
+    \mu_x &  je průměr x \\
+    \mu_y &  je průměr y \\
+    \sigma_x^2 &  je variance x \\
+    \sigma_y^2 &  je variance y \\
+    \sigma_{xy} &  je kovariance mezi x a y \\
+    C_1 &  je konstanta stabilizující dělení, pokud jsou průměry blízké nule \\
+    C_2 &  je konstanta stabilizující dělení, pokud jsou variance blízké nule
+\end{conditions}
+
+\subsubsection{Jaccard Index}
+Pro vyhodnocení efektivity natrénovaných segmentačních modelů budu používat metriku Jaccard index, někdy nazývanou také jako Intersection over union (IoU). Tato metrika se mi velmi osvědčila při měření výkonu segmentačních modelů u jiných projektů, a proto byla zvolena hlavním měřítkem, které udává jaký vliv má předzpracování na učení sítě U-net. Tato metrika je definována jako velikost oblasti průniku segmentačních masek dělená velikostí jejich sjednocením predikované segmentační masky vůči originální. Právě z podstaty měření přesného překrytí pixelů predikované a originální masky, je Jaccard index velmi účinnou metrikou pro měření výkonu segmentačních modelů. Matematicky lze tento vztah vyjádřit následovně:
+
+\begin{equation}
+    \text{Jaccard index (IoU)}(A, B) = \frac{|A \cap B|}{|A \cup B|}
+\end{equation}
+\begin{conditions}
+    A & množina predikovaných pixelů \\
+    B & množina pixelů v originální masce \\
+\end{conditions}
+
 \section{Obecné postupy augmentace dat}
 Augmentace dat neboli rozšiřování dat je klíčovou technikou v oblasti strojového učení, zejména v oblastech zpracování obrazu a počítačového vidění. Zahrnuje umělé rozšíření velikosti a rozmanitosti datové sady použitím řady transformací, které jsou aplikovány na vstupní data. Tato sekce se bude zabývat konceptem augmentace dat, důvody použití se zdůrazněním na přínos i omezení při aplikace augmentace a v neposlední řadě budou popsány jedny z nejpoužívanějších technik rozšiřování dat.
 
 \subsection{Augmentace dat}
 Augmentace dat je mocný nástroj používaný ve strojovém učení ke zvětšení velikosti a rozmanitosti datových sad, což je zvláště výhodné při trénování modelů hlubokého učení. Podstata augmentace dat spočívá v aplikaci řady deterministických nebo náhodných transformací na trénovací vzorky s cílem vytvořit nová, rozmanitá data. Tento proces pomáhá simulovat variabilitu, s níž se model může setkat v reálných scénářích, a tím zlepšuje jeho zobecňovací schopnosti.
 
-Rozšířování dat zahrnuje několik kroků a technik, z nichž každá má za cíl upravit původní data tak, aby odrážela možné odchylky v reálném světě, aniž by se změnilo vlastní označení nebo význam dat. V případě obrázků to mohou být geometrické transformace, rozšíření barevného prostoru, jádrové filtry nebo zamíchání obrázků. Rozšířená data jsou pak vložena do procesu trénování spolu s původními daty. Takto rozšířená sada dat poskytuje modelu ucelenější sadu příkladů, z nichž se může učit, a pokrývá tak širší škálu variant, než jakou by mohla nabídnout samotná původní sada dat. Augmentace dat může být iterativní proces, při kterém se v různých trénovacích epochách používají různé kombinace transformací. Toto neustálé zavádění variací může zabránit tomu, aby se modely příliš zaměřovaly na konkrétní variace trénovacích dat a tím se zabraňovalo možnému přeučený trénovaného modelu\footnote{Přeučení, nebo "overfitting", je jev, kdy model strojového učení příliš přesně odpovídá omezené sadě trénovacích dat, což způsobuje, že má potíže s generalizací na nová, neviděná data.}. \cite{AugmentationBasics, AugmentationSurvey}
+Rozšiřování dat zahrnuje několik kroků a technik, z nichž každá má za cíl upravit původní data tak, aby odrážela možné odchylky v reálném světě, aniž by se změnilo vlastní označení nebo význam dat. V případě obrázků to mohou být geometrické transformace, rozšíření barevného prostoru, jádrové filtry nebo zamíchání obrázků. Rozšířená data jsou pak vložena do procesu trénování spolu s původními daty. Takto rozšířená sada dat poskytuje modelu ucelenější sadu příkladů, z nichž se může učit, a pokrývá tak širší škálu variant, než jakou by mohla nabídnout samotná původní sada dat. Augmentace dat může být iterativní proces, při kterém se v různých trénovacích epochách používají různé kombinace transformací. Toto neustálé zavádění variací může zabránit tomu, aby se modely příliš zaměřovaly na konkrétní variace trénovacích dat a tím se zabraňovalo možnému přeučený trénovaného modelu\footnote{Přeučení, nebo "overfitting", je jev, kdy model strojového učení příliš přesně odpovídá omezené sadě trénovacích dat, což způsobuje, že má potíže s generalizací na nová, neviděná data.}. \cite{AugmentationBasics, AugmentationSurvey}
 
 \subsection{Přínos a omezení při rozšiřování dat}
-Rozšířování dat může být dvousečná zbraň při využití ve strojovém učení, zejména v úlohách zahrnujících složité typy dat, jako jsou obrázky. Může sice významně zvýšit schopnost modelu schopnost zobecňovat na základě trénovacích dat, ale pokud není výběr augmentačních metod promyšlený, představuje také riziko. Tato podsekce se zabývá výhodami a omezeními rozšiřování dat a zdůrazňuje důležitost výběru vhodných strategií rozšiřování pro konkrétní úlohy.
+Rozšiřování dat může být dvousečná zbraň při využití ve strojovém učení, zejména v úlohách zahrnujících složité typy dat, jako jsou obrázky. Může sice významně zvýšit schopnost modelu zobecňovat na základě trénovacích dat, ale pokud není výběr augmentačních metod promyšlený, představuje také riziko. Tato podsekce se zabývá výhodami a omezeními rozšiřování dat a zdůrazňuje důležitost výběru vhodných strategií rozšiřování pro konkrétní úlohy.
 
 \subsubsection{Benefity rozšiřování dat}
 Zavedení realistických variací do trénovacích dat umožňuje modelům lépe se přizpůsobit a efektivně fungovat v široké škále scénářů, které mohou přesahovat podmínky zastoupené v původní datové sadě. Tato schopnost je nezbytná zejména v oblastech, kde je obtížné nebo finančně náročné získat rozmanité a rozsáhlé datové sady. Například ve zdravotnictví nebo v autonomních vozidlech, kde musí modely rozpoznávat a reagovat na nečekané situace, které nebyly přímo součástí trénovacích dat. Augmentace dat také zvyšuje efektivní velikost datové sady, což je klíčové pro minimalizaci přeučení modelu. Tím, že model není vystaven pouze omezenému počtu vzorů, se snižuje riziko, že by se model příliš zaměřil na irelevantní detaily, které nejsou užitečné pro generalizaci na nová data. Dále techniky jako vnášení šumu, ořezávání a rotace přispívají k zvýšení odolnosti modelu vůči různým změnám a zkreslením vstupů, což je kritické pro aplikace v reálném světě, kde jsou vstupní data často nepředvídatelná a různorodá. \cite{AugmentationBasics, AugmentationSurvey}
@@ -768,7 +844,7 @@ Transformace na úrovni pixelů zahrnují různé operace, které ovlivňují in
 Další techniky augmentace dat zahrnují ořezávání obrazu, které se provádí oříznutím náhodných obdélníkových oblastí v obraze. Tato metoda není jen o redukci velikosti a tvarů obrázků, ale jedná se o strategii, která nutí modely rozpoznat a rekonstruovat chybějící části, čímž se zlepšuje jejich schopnost generalizace. Náhodné ořezávání může modelům pomoci lépe se zaměřit na důležité části obrazu a zlepšit jejich detekční a klasifikační schopnosti tím, že je vyzývá k identifikaci a doplnění chybějících informací. Tato technika je zvláště účinná pro zvýšení odolnosti modelu vůči částečně zakrytým nebo neúplným vstupům, což je běžné v reálných scénářích, kde nemusí být objekty zcela viditelné. \cite{AugmentationSurvey}
 
 \chapter{Měření vlivu předzpracování obrazu na výkonost neuronové sítě U-NET}
-V oblasti zpracování rentgenových snímků je výkon modelů hlubokého učení výrazně ovlivněn kvalitou a množstvím dat, na kterých jsou tyto modely trénovány. Následující kapitola se bude zabývat vlivem předzpracování rentgenových snímků a augmentace dat na účinnost segmentace pomocí modelů sítě U-Net jak pro binární, tak pro vícetřídní úlohy.
+V oblasti zpracování rentgenových snímků je výkon modelů hlubokého učení výrazně ovlivněn kvalitou a množstvím dat, na kterých jsou tyto modely trénovány. Následující kapitola se bude zabývat měřením vlivu předzpracování rentgenových snímků a augmentace dat na účinnost segmentace pomocí modelů sítě U-Net jak pro binární, tak pro vícetřídní úlohy.
 
 Kroky předzpracování, jako je normalizace, změna velikosti a odstraňování šumu, jsou zásadní pro zlepšení kvality vstupních dat a jejich přípravu pro trénování neuronových sítí. Augmentace dat, zahrnující techniky jako rotace, překlápění a škálování, dále rozšiřuje datovou sadu a umožňuje modelům lépe se zobecnit učením se z různých variací vstupních dat. Dále bude v kapitole prozkoumáno použití pokročilých neuronových sítí, detaily tréninkových a validačních procesů U-Net a metodologie použité k měření dopadu těchto technik. Výsledky z těchto experimentů jsou poté analyzovány, aby poskytly přehled o optimalizaci modelů U-Net pro lepší segmentační výkon v medicínských obrazových úlohách.
 
@@ -832,14 +908,12 @@ Ve vytvořené datové sadě se nachází 5000 rentgenů hrudníku a 500 rentgen
 
 Tento postup umožňuje vytvoření různých úrovní obtížnosti při odstraňování šumu, což je klíčové pro vývoj a vyhodnocení robustních modelů pro redukci šumu.
 
-Nejprve jsem aplikoval jednotlivé typy šumů samostatně na části datasetu (první tři řádky v tabulce \ref{table:noiseTypes}), což vytváří relativně jednoduše odstranitelné šumové artefakty. Tímto způsobem můžu zhodnotit základní schopnosti algoritmů pro redukci šumu efektivně odstraňovat každý typ šumu zvlášť. Čtvrtý řádek v tabulce \ref{table:noiseTypes} představuje střední úroveň obtížnosti. Tento krok testuje algoritmy v situacích, kde musí řešit více šumových podmínek současně, což simuluje složitější a realističtější scénáře, jaké mohou nastat v praxi. Poslední řádek tabulky \ref{table:noiseTypes} simuluje nejnáročnější scénáře pro vytvořené algoritmy, které musí být schopny odstranit kombinaci různých typů šumů. Tyto snímky jsou klíčové pro testování a vývoj velmi robustních modelů, které mohou efektivně fungovat v nejrůznějších reálných situacích.
+Nejprve jsem aplikoval jednotlivé typy šumů samostatně na části datasetu (první tři řádky v tabulce \ref{table:noiseTypes}), což vytváří relativně jednoduše odstranitelné šumové artefakty. Tímto způsobem můžu zhodnotit základní schopnosti algoritmů pro redukci šumu efektivně odstraňovat každý typ šumu zvlášť. Čtvrtý řádek v tabulce \ref{table:noiseTypes} představuje střední úroveň obtížnosti. Tento krok testuje algoritmy v situacích, kde musí řešit více šumových podmínek současně, což simuluje složitější a realističtější scénáře, jaké mohou nastat v praxi. Poslední řádek tabulky \ref{table:noiseTypes} odpovídá nejnáročnějším scénářům pro vytvořené algoritmy, které musí být schopny odstranit kombinaci různých typů šumů. Tyto snímky jsou klíčové pro testování a vývoj velmi robustních modelů, které mohou efektivně fungovat v nejrůznějších reálných situacích.
 
 Tento stratifikovaný přístup k aplikaci šumu nejen zajišťuje důkladné testování algoritmů pro redukci šumu ve snímcích, ale také pomáhá při vývoji a ladění modelů, které jsou schopny se přizpůsobit různým úrovním šumové zátěže. Tímto způsobem dosáhnu komplexního hodnocení a vývoje efektivních technik pro zpracování rentgenových snímků v různých podmínkách.
 
 \subsubsection{Měření hodnoty šumu ve snímcích}
-Pro aplikaci šumu na snímky jsem využil knihovnu \texttt{numpy} \cite{Numpy}, se kterou jsem implementoval funkce pro přidání speckle šumu, šumu soli a pepře a Poissonova šumu. Hlavním parametrem těchto funkcí pro regulaci šumu je nastavení intenzity, nikoli nastavení směrodatné odchylky (std). Abych mohl porovnat úroveň šumu ve snímcích, naprogramoval jsem funkci pro odhad směrodatné odchylky šumu ve snímku.
-
-Pro aplikaci šumu na snímky jsem využil knihovnu \texttt{numpy}, se kterou jsem implementoval funkce pro přidání speckle šumu, šumu soli a pepře a Poissonova šumu. Hlavním parametrem těchto funkcí je intenzita šumu, nikoli jeho směrodatná odchylka (std). Použití intenzity jako parametru je praktické pro aplikaci různých úrovní šumu, ale pro analýzu a srovnání je často nutné znát skutečnou směrodatnou odchylku šumu v obraze. Proto jsem vyvinul následující funkci, která odhaduje směrodatnou odchylku šumu v obraze pomocí extrakce segmentů (anglicky "patches") a analýzy hlavních komponent (PCA). Následující kód ukazuje implementaci zmíněné funkce\footnote{Kompletní implementace funkcí pro přidání šumu lze nalézt v GitHub repozitáři této práce.}.
+Pro aplikaci šumu na snímky jsem využil knihovnu \texttt{numpy} \cite{Numpy}, se kterou jsem implementoval funkce pro přidání speckle šumu, šumu soli a pepře a Poissonova šumu. Hlavním parametrem těchto funkcí je intenzita šumu, nikoli jeho směrodatná odchylka (std). Použití intenzity jako parametru je praktické pro aplikaci různých úrovní šumu, ale pro analýzu a srovnání je často nutné znát skutečnou směrodatnou odchylku šumu v obraze. Proto jsem vyvinul následující funkci, která odhaduje směrodatnou odchylku šumu v obraze pomocí extrakce segmentů (anglicky "patches") a analýzy hlavních komponent (PCA). Následující kód ukazuje implementaci zmíněné funkce\footnote{Kompletní implementace funkcí pro přidání šumu lze nalézt v GitHub repozitáři této práce.}.
 
 \begin{lstlisting}[language=Python, caption={Funkce pro odhad směrodatné odchylky šumu ve snímku}, label={lst:noise_estimation}]
     import numpy as np
@@ -874,7 +948,14 @@ Pro aplikaci šumu na snímky jsem využil knihovnu \texttt{numpy}, se kterou js
         return np.sqrt(pca.explained_variance_), np.sqrt(noise_variance)
 \end{lstlisting}
 
-Tato funkce mi umožňuje kvantifikovat a porovnávat úrovně šumu a pomocí těchto odhadů mohu lépe analyzovat výkon algoritmů na různých úrovních šumu.
+Tato funkce mi umožňuje kvantifikovat a porovnávat úrovně šumu a pomocí těchto odhadů mohu lépe analyzovat výkon algoritmů na různých úrovních šumu. Pro ukázku výstupu z popsané metody slouží následující graf \ref{fig:PCA_std}, na kterém je zobrazena hodnota směrodatné odchylky šumu na daném snímku. Na tento snímek, byla aplikována kombinace tří různých typů šumů a jedná se tedy o silně zašuměný snímek. Hodnota směrodatné odchylky se v grafu pohybuje v rozmezí od 80 do 50. Jelikož hodnota směrodatné odchylky u čistých snímků dosahuje maximálně hodnoty 20, je zřejmé, že se skutečně jedná o silně degradovaný snímek.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{Prilohy/Obrazky/PCA_std_all_three_noise_types.png}
+    \caption{Graf zobrazující hodnotu směrodatné odchylky silně zašuměného snímku.}
+    \label{fig:PCA_std}
+\end{figure}
 
 \section{Návrh metod vhodných pro předzpracování rentgenových snímků}
 V této části se budu zabývat charakteristikou použitých knihoven a technologií, nastavením projektu pomocí nástroje Poetry a implementací různých standardních metod používaných pro odstranění šumu a zlepšení kvality obrazu. Zatímco teoretické pozadí a principy těchto metod byly popsány v teoretické části této práce, následující část se zaměřuje na praktické aspekty jejich implementace, včetně jakýchkoliv dalších algoritmů, které dosud nebyly zmíněny. Dále vysvětlím použití tzv. Ensemble Averaging postupu, který napomáhá ke zlepšení robustnosti algoritmů pro redukci šumu.
@@ -992,15 +1073,6 @@ Některé z metod nebyly ve zmíněných knihovnách dostupné, bylo proto nutn�
         return filtered_image_uint8
 \end{lstlisting}
 
-\subsection{Výzvy a úskalí standardních metod}
-Standardní metody pro odstranění šumu mají několik omezení, která mohou ovlivnit jejich účinnost v reálných aplikacích. Tato omezení jsou důležitá pro pochopení, proč samotné použití těchto metod nemusí být vždy dostatečné a proč je třeba hledat pokročilejší přístupy.
-
-Většina standardních metod je navržena tak, aby se zaměřovala na specifické typy šumu. Například mediánový filtr je efektivní pro odstranění impulzního šumu, ale nemusí být účinný proti jiným typům. Toto zaměření na specifické typy šumu znamená, že pokud není typ šumu v obraze znám, může být obtížné vybrat správnou metodu pro jeho odstranění. V reálných aplikacích často není možné předem určit, jaký typ šumu bude v obraze přítomen, což výrazně omezuje účinnost těchto metod.
-
-Dalším problémem je přítomnost více typů šumu současně v jednom obraze. Například, lékařské snímky mohou obsahovat kombinaci šumu typu speckle, Poissonova šumu a dalších artefaktů. Standardní metody, které jsou navrženy pro odstranění jednoho typu šumu, nemusí být schopny efektivně zvládnout takovou kombinaci. Použití jedné metody může zlepšit jednu část obrazu, ale zároveň zhoršit jinou.
-
-Tento problém kombinace šumů vede k potřebě metod, které jsou schopny efektivně řešit více typů šumu současně, nebo metod, které kombinují výstupy různých filtrů pro dosažení lepších výsledků. Tato potřeba byla jedním z důvodů, proč jsem se rozhodl implementovat tzv. ensemble averaging.
-
 \subsection{Ensemble averaging}
 Vzhledem k omezením standardních metod pro odstranění šumu, jsem se rozhodl implementovat přístup zvaný ensemble averaging. Tento přístup kombinuje výsledky několika různých metod pro odstranění šumu a poskytuje tak robustnější a efektivnější řešení.
 
@@ -1055,15 +1127,15 @@ Ensemble averaging nabízí několik výhod, které zlepšují kvalitu výsledn�
 Nicméně ensemble averaging má také svá omezení. Jedním z hlavních problémů je výpočetní náročnost, protože každá metoda musí být aplikována samostatně na každý obraz, což výrazně zvyšuje dobu zpracování. Dalším omezením je složitost nastavení parametrů jednotlivých metod, protože různé snímky se mohou lišit a metody mohou vykazovat odlišné chování v závislosti na těchto rozdílech. Navíc kvalita výsledného obrazu závisí na výkonnosti jednotlivých metod, pokud tedy některá metoda selže, může to negativně ovlivnit celkový výsledek.
 
 \section{Návrh a implementace specializovaných modelů neuronových sítí}
-Následující sekce bude věnována návrhu a implementaci specializovaných modelů neuronových sítí pro odstranění šumu z rentgenových snímků. Sekce bude zahrnovat detailní popis dvou různých modelů neuronových sítí: konvoluční neuronovová síť pro redukci šumu (Denoising convolutional neural network DnCNN) a autoenkodér pro redukci šumu (Denoising autoencoder DAE). Popis modelů bude obsahovat podrobnosti o tom, jak jednotlivé modely fungují a bude také podrobně popsána jejich implementace, s důrazem na výsledky dosažené při odstraňování šumu.
+Následující sekce bude věnována návrhu a implementaci specializovaných modelů neuronových sítí pro odstranění šumu z rentgenových snímků. Sekce bude zahrnovat detailní popis dvou různých modelů neuronových sítí: konvoluční neuronová síť pro redukci šumu (Denoising convolutional neural network DnCNN) a autoenkodér pro redukci šumu (Denoising autoencoder DAE). Popis modelů bude obsahovat podrobnosti o tom, jak jednotlivé modely fungují a bude také podrobně popsána jejich implementace, s důrazem na výsledky dosažené při odstraňování šumu.
 
 \subsection{Neuronová síť DnCNN}
-Konvoluční neuronovová síť pro redukci šumu (DnCNN) je pokročilý model, který se na rozdíl od tradičních metod zaměřuje na předvídání šumu přítomného v obraze, aniž by předvídal celý obraz. Tento nalazený šum je poté odečten od zašuměného vstupu, aby se získal čistý obraz. Tato metoda využívá residuální učení (residual learning), které umožňuje síti naučit se mapování ze zašuměného obrazu na samostatný šum. Koncept a implementace DnCNN byly představeny v článku "Beyond a Gaussian Denoiser: Residual Learning of Deep CNN for Image Denoising" \cite{DnCNN}.
+Konvoluční neuronová síť pro redukci šumu (DnCNN) je pokročilý model, který se na rozdíl od tradičních metod zaměřuje na předvídání šumu přítomného v obraze, aniž by předvídal celý obraz. Tento nalazený šum je poté odečten od zašuměného vstupu, aby se získal čistý obraz. Tato metoda využívá residuální učení (residual learning), které umožňuje síti naučit se mapování ze zašuměného obrazu na samostatný šum. Koncept a implementace DnCNN byly představeny v článku "Beyond a Gaussian Denoiser: Residual Learning of Deep CNN for Image Denoising" \cite{DnCNN}.
 
 \subsubsection{Architektura DnCNN}
 Architektura DnCNN se skládá z několika konvolučních vrstev propojených aktivačními funkcemi ReLU a normalizačními vrstvami BatchNorm. Počáteční vrstva transformuje vstupní obraz na reprezentaci do vyšší dimenze. Následuje série vrstev, z nichž každá je následována vrstvou BatchNorm a aktivační funkcí ReLU. Tyto mezivrstvy umožňují modelu efektivně extrahovat rysy z obrazu a učit se složité vzory šumu. Poslední vrstvou je konvoluční vrstva, která předpovídá šum v obraze. Síť se může zaměřit na zachycení vysokofrekvenčních složek šumu, jejichž modelování je často náročnější. Tato konstrukce výrazně zlepšuje schopnost sítě odstraňovat z obrazu různé typy šumu, což vede k lepšímu výkonu ve srovnání s běžnými metodami. Níže je implementace této architektury:
 
-\begin{lstlisting}[language=Python, caption={Implementace konvoluční neuronovové sítě pro redukci šumu}, label={lst:DnCNN}]
+\begin{lstlisting}[language=Python, caption={Implementace konvoluční neuronové sítě pro redukci šumu}, label={lst:DnCNN}]
     import torch
     import torch.nn as nn
     from torchmetrics import MetricCollection
@@ -1274,49 +1346,6 @@ Architektura DAE je detailně znázorněna na diagramu \ref{fig:DAE}. Diagram il
     \caption{Diagram zobrazující architekturu denoising autoenkodéru.}
     \label{fig:DAE}
 \end{figure}
-\clearpage
-
-\subsection{Metriky pro ohodnocení modelů}
-Předtím než budu moci přejít na výsledky popsaných architektur neuronových sítí, bude nutné definovat vybrané metriky pro ohodnocení natrénovaných modelů. Tyto metriky slouží k ohodnocení predikovaných výsledků vůči vstupnímu obrazu. Pro ohodnocení popsaných modelů jsem si jako hlavní metriky zvolil Peak Signal-to-Noise Ratio (PSNR) a Structural Similarity Index (SSIM) kvůli jejich efektivitě při měření kvality obrazu.
-
-\subsubsection{Peak Signal-to-Noise Ratio (PSNR)}
-Peak Signal-to-Noise Ratio (PSNR) je široce používaná metrika pro hodnocení kvality rekonstruovaných snímků v porovnání se vstupními daty. PSNR se vypočítává na základě průměrné kvadratické chyby (MSE) mezi původním a rekonstruovaným obrazem. Hodnota udávaná touto metrikou je měřena v decibelech a vyšší hodnota PSNR značí lepší kvalitu obrazu, protože znamená nižší chybu mezi porovnávanými obrazy. \cite{PSNRSSIM}
-
-Vzorec pro výpočet PSNR je definován následovně:
-\begin{equation}
-    \text{PSNR} = 10 \cdot \log_{10} \left( \frac{\text{MAX}^2}{\text{MSE}} \right)
-\end{equation}
-\begin{conditions}
-    MAX &  je maximální možná hodnota pixelu v daném snímku (např. pro 8bitové obrazy je $MAX = 255$) \\
-    MSE &  je průměrná kvadratická chyba
-\end{conditions}
-
-\begin{equation}
-    \text{MSE} = \frac{1}{mn} \sum_{i=0}^{m-1} \sum_{j=0}^{n-1} [I(i,j) - K(i,j)]^2
-\end{equation}
-\begin{conditions}
-    I(i,j) &  je hodnota pixelu původního obrazu na pozici $(i, j)$ \\
-    K(i,j) &  je hodnota pixelu rekonstruovaného obrazu na pozici $(i, j)$ \\
-    m &  je počet řádků obrazu \\
-    n &  je počet sloupců obrazu
-\end{conditions}
-
-\subsubsection{Structural Similarity Index (SSIM)}
-Structural Similarity Index (SSIM) je další důležitá metrika pro posouzení kvality obrazu. Na rozdíl od tradičních metrik, jako jsou MSE nebo PSNR, je SSIM navržen tak, aby lépe korespondoval s lidským vizuálním vnímáním kvality obrazu. Hodnotí kvalitu obrazu na základě tří klíčových aspektů: jasu, kontrastu a struktury (uspořádní pixelů v obraze s důrazem na vzory a textury). SSIM hodnotí podobnost mezi dvěma snímky porovnáním jejich strukturálních informací, což je klíčový faktor při určování vnímané kvality obrazu. \cite{PSNRSSIM}
-
-SSIM je definováno vzorcem níže:
-\begin{equation}
-    \text{SSIM}(x, y) = \frac{(\mu_x \mu_y + C_1)(2\sigma_{xy} + C_2)}{(\mu_x^2 + \mu_y^2 + C_1)(\sigma_x^2 + \sigma_y^2 + C_2)}
-\end{equation}
-\begin{conditions}
-    \mu_x &  je průměr x \\
-    \mu_y &  je průměr y \\
-    \sigma_x^2 &  je variance x \\
-    \sigma_y^2 &  je variance y \\
-    \sigma_{xy} &  je kovariance mezi x a y \\
-    C_1 &  je konstanta stabilizující dělení, pokud jsou průměry blízké nule \\
-    C_2 &  je konstanta stabilizující dělení, pokud jsou variance blízké nule
-\end{conditions}
 
 \subsection{Výsledky neuronových sítí DnCNN a DAE při redukování šumu v rentgenových snímcích}
 Pro vyhodnocení výkonu natrénovaných modelů neuronových sítí je nezbytné stanovit kvalitu samotných zašuměných snímků v porovnání s jejich originálními protějšky. Tato základní úroveň pomáhá pochopit rozsah zlepšení dosaženého modely pro odstranění šumu. Průměrná hodnota naměřené metriky PSNR pro zašuměné snímky je zhruba 25dB a průměrná hodnota SSIM vychází přibližně 60\%.
@@ -1358,16 +1387,6 @@ Následně byla hodnocena výkonnost autoenkodér pro redukci šumu (DAE), což 
 
 \section{Aplikace implementovaných metod a měření vlivu předzpracování na efektivitu segmentačních modelů}
 V této sekci se zaměřím na měření vlivu předzpracování na efektivitu segmentačních modelů. Při popisování struktury projektu již zazněl název architektury, na které bude vliv předzpracování měřen. Jedná se o široce používanou architekturu v oblasti segmentace medicínských dat, nesoucí název U-Net. Podrobné informace o architektuře sítě U-Net lze nalézt v článku Ronnebergera a kol. (2015) \cite{UNET_paper}.
-
-Pro vyhodnocení efektivity natrénovaných segmentačních modelů jsem používal metriku Jaccard index, někdy nazývanou také jako Intersection over union (IoU). Tato metrika se mi velmi osvědčila při měření výkonu segmentačních modelů u jiných projektů, a proto byla zvolena hlavním měřítkem, které udává jaký vliv má předzpracování na učení sítě U-net. Tato metrika je definována jako velikost oblasti průniku segmentačních masek dělená velikostí jejich sjednocením predikované segmentační masky vůči originální. Právě z podstaty měření přesného překrytí pixelů predikované a originální masky, je Jaccard index velmi účinnou metrikou pro měření výkonu segmentačních modelů. Matematicky lze tento vztah vyjádřit následovně:
-
-\begin{equation}
-    \text{Jaccard index (IoU)}(A, B) = \frac{|A \cap B|}{|A \cup B|}
-\end{equation}
-\begin{conditions}
-    A & množina predikovaných pixelů \\
-    B & množina pixelů v originální masce \\
-\end{conditions}
 
 Segmentační modely sítě U-Net jsem trénoval na několika datových sadách. Nejdříve jsem natrénoval a změřil výkon modelu na originálních nezašuměných datech. Tento model sloužil pro porovnání vlivu předzpracování a jednalo se o vrchol možného zlepšení dalších modelů. Dále jsem použil pro trénování datovou sadu zašuměných snímků, která představovala pravý opak prvního natrénovaného modelu. Jinými slovy mělo jít o nejhorší model, který jsem se poté snažil vylepšit pomocí technik pro předzpracování snímků. Abych mohl trénovat modely využívající metody předzpracování, tak jsem vytvořil celkem šest datových sad, rozdělených po dvojicích. Každá první datová sada z dvojice zahrnovala snímky plic a druhá snímky zubů upravených pomocí sítě DnCNN, DAE a ensemble avering techniky.
 
