@@ -403,7 +403,7 @@ Existuje několik typů šumu, které se mohou ve snímcích vyskytovat. Tyto š
 \end{itemize}
 
 \subsubsection{Typy filtrů pro redukci šumu}
-Pro efektivní redukci šumu ve snímcích jsou k dispozici různé typy filtrů, které se liší svým principem a účinností v závislosti na konkrétním typu šumu. Níže jsou uvedeny některé z nejčastěji používaných filtrů pro redukci šumu ve snímcích.
+Pro efektivní redukci šumu ve snímcích jsou k dispozici různé typy filtrů, které se liší svým principem a účinností v závislosti na konkrétním typu šumu. Filtrování šumu se dělí na:
 
 \begin{itemize}
     \item \textbf{Lineární filtrování}, také známo jako konvoluční filtrování, aplikuje lineární operátor na skupinu sousedících pixelů v obrazu s cílem vyhladit nebo zvýraznit určité vlastnosti obrazu. Hlavní principem lineárních filtrů je konvoluce obrazu s jádrem filtru či maskou, což je malá matice daného rozměru, která určuje váhy pro každý pixel v okolí. Tyto váhy určují, jakým způsobem okolní pixely ovlivňují hodnotu pixelu výstupního obrazu. Hlavní výhodou lineárních filtrů je jejich jednoduchost a efektivita, což je dělá vhodnými pro rychlé a efektivní zpracování obrazu. Nicméně, lineární filtry mohou způsobovat neostrost hran and detailů ve snímcích. \cite{ImageDenoisingTechniques, XRayImageProcessing}
@@ -418,6 +418,8 @@ Pro efektivní redukci šumu ve snímcích jsou k dispozici různé typy filtrů
     \end{conditions}
     \item \textbf{Nelineární filtrování} je alternativní přístup k redukci šumu, který se zaměřuje na zachování hran a detailů v obraze. Nelineární filtry jsou schopny zacházet s nelineárními vztahy mezi pixely a jsou schopny lépe zachovat důležité strukturální vlastnosti obrazu. Nelineární filtry jsou proto obzvláště účinné při redukci impulzního či speckle šumu. \cite{ImageDenoisingTechniques, XRayImageProcessing}
 \end{itemize}
+
+Níže jsou uvedeny některé z nejčastěji používaných filtrů pro redukci šumu ve snímcích a na obrázku \ref{fig:noise_reduction_filters} je předvedeno jejich použítí.
 
 \subsubsection{Gaussovský filtr}
 Gaussovský filtr reprezentuje jeden z nejčastěji používaných lineárních filtrů pro redukci šumu ve snímcích. Tento filtr je založen na aplikaci Gaussova jádra na obraz, což umožňuje odstranit vysokofrekvenční šum. Gaussovský filtr je založen na principu aplikace Gaussovy funkce na vstupní obraz, která počítá vážený průměr okolí každého pixelu, s nejvyšší váhou soustředěnou na samotný pixel a se zmenšujícími se váhami pro sousední pixely na základě jejich prostorové vzdálenosti od středového pixelu. Gaussovský filtr je založen na konvoluci obrazu s Gaussovým jádrem, které je definováno jako:
@@ -604,11 +606,7 @@ Standardní metody pro odstranění šumu mají několik omezení, která mohou 
 
 Většina standardních metod je navržena tak, aby se zaměřovala na specifické typy šumu. Například mediánový filtr je efektivní pro odstranění impulzního šumu, ale nemusí být účinný proti jiným typům. Toto zaměření na specifické typy šumu znamená, že pokud není typ šumu v obraze znám, může být obtížné vybrat správnou metodu pro jeho odstranění. V reálných aplikacích často není možné předem určit, jaký typ šumu bude v obraze přítomen, což výrazně omezuje účinnost těchto metod.
 
-Dalším problémem je přítomnost více typů šumu současně v jednom obraze. Například, lékařské snímky mohou obsahovat kombinaci šumu typu speckle, Poissonova šumu a dalších artefaktů. Standardní metody, které jsou navrženy pro odstranění jednoho typu šumu, nemusí být schopny efektivně zvládnout takovou kombinaci. Použití jedné metody může zlepšit jednu část obrazu, ale zároveň zhoršit jinou.
-
-Tento problém kombinace šumů vede k potřebě metod, které jsou schopny efektivně řešit více typů šumu současně, nebo metod, které kombinují výstupy různých filtrů pro dosažení lepších výsledků.
-
-% \subsection{Prahování a binarizace} TODO: if not enough pages write this as well
+Dalším problémem je přítomnost více typů šumu současně v jednom obraze. Například, lékařské snímky mohou obsahovat kombinaci šumu typu speckle, Poissonova šumu a dalších artefaktů. Standardní metody, které jsou navrženy pro odstranění jednoho typu šumu, nemusí být schopny efektivně zvládnout takovou kombinaci. Použití jedné metody může zlepšit jednu část obrazu, ale zároveň zhoršit jinou. Tento problém kombinace šumů vede k potřebě metod, které jsou schopny efektivně řešit více typů šumu současně, nebo metod, které kombinují výstupy různých filtrů pro dosažení lepších výsledků.
 
 \section{Neuronové sítě pro předzpracování obrazu}
 Předchozí sekce byla věnována klasickým metodám předzpracování obrazu, kde byl brán důraz na techniky pro vylepšení obrazu a odstranění či redukci různých typů šumu ze snímků. Tato sekce se bude zabývat pokročilým oborem pro předzpracování obrazu, kterým jsou neuronové sítě.
@@ -622,7 +620,14 @@ Využití neuronových sítí však také přináší výzvy, včetně potřeby 
 Následující sekce bude zaměřena na nejčastěji využívané architekty neuronových sítí pro předzpracování obrazu, s důrazem na konvoluční neuronové sítě (CNN). \cite{CNNConcepts}
 
 \subsection{Úvod do konvolučních neuronových sítí}
-Neuronové sítě jsou základním stavebním prvkem moderního strojového učení a mají zásadní význam pro rozvoj oblastí jako je zpracování přirozeného jazyka či obrazu, rozpoznávání objektů v obraze, při analýze signálu, v robotice a mnoha jiných důležitých oborech. Tyto systémy jsou inspirovány strukturou a funkcí lidského mozku a jsou navrženy tak, aby modelovaly složité vzory a vztahy v datech. Strukturálně jsou neuronové sítě složeny z vrstev neuronů, což jsou jednotky zpracovávající informace, které jsou propojeny spojeními, ohodnocenými vahami.
+Neuronové sítě jsou základním stavebním prvkem moderního strojového učení a mají zásadní význam pro rozvoj oblastí jako je zpracování přirozeného jazyka či obrazu, rozpoznávání objektů v obraze, při analýze signálu, v robotice a mnoha jiných důležitých oborech. Tyto systémy jsou inspirovány strukturou a funkcí lidského mozku a jsou navrženy tak, aby modelovaly složité vzory a vztahy v datech. Strukturálně jsou neuronové sítě složeny z vrstev neuronů, což jsou jednotky zpracovávající informace, které jsou propojeny spojeními, ohodnocenými vahami. Tento vztah je ilustrován na obrázku \ref{fig:nn_components}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{Prilohy/Obrazky/NNComponents.png}
+    \caption{Ilustrace neuronové jednotky, ukazující základní komponenty jako vstup, váhy, bias, aktivační funkci a výstup. (převzato z \cite{NNComponentsIMG} pod licencí CC BY-SA 4.0)}
+    \label{fig:nn_components}
+\end{figure}
 
 \subsubsection{Hlavní komponenty neuronových sítí}
 Základem neuronové sítě je její architektura, která je definována několika klíčovými komponentami. Tyto komponenty jsou základem pro učení a zpracování dat v síti. V následujícím seznamu jsou jednotlivé komponenty podrobněji popsány:
@@ -647,13 +652,6 @@ Základem neuronové sítě je její architektura, která je definována několi
     \item \textbf{Optimalizační algoritmus (Optimizer)} je základem učení neuronových sítí, protože určují, jak se síť učí z dat tím, že iterativně upravují váhy a biasy k minimalizaci ztrátové funkce. Stochastic Gradient Descent (SGD) provádí tuto úpravu tak, že v každém kroku tréninku náhodně vybere vzorek dat a spočítá gradient ztrátové funkce pouze na základě tohoto vzorku:
     Adam a RMSprop jsou pokročilejší varianty, které se snaží zlepšit konvergenci SGD tím, že upravují rychlost učení pro každý parametr individuálně, což může vést k rychlejšímu a stabilnějšímu učení, zejména v komplexních sítích.
 \end{itemize}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=\linewidth]{Prilohy/Obrazky/NNComponents.png}
-    \caption{Ilustrace neuronové jednotky, ukazující základní komponenty jako vstup, váhy, bias, aktivační funkci a výstup. (převzato z \cite{NNComponentsIMG} pod licencí CC BY-SA 4.0)}
-    \label{fig:nn_components}
-\end{figure}
 
 Základní komponenty neuronových sítí hrají zásadní roli ve funkcionalitě vytvořených modelů. Neurony a vrstvy formují strukturu sítě, zatímco aktivační funkce umožňují modelování nelineárních vztahů, což je nezbytné pro zpracování složitých vzorů a funkcí. Ztrátové funkce poskytují metriku pro hodnocení úspěšnosti sítě v předpovídání a jsou klíčové pro navigaci procesu učení. Optimalizační algoritmy řídí tento učící se proces tím, že iterativně upravují interní parametry sítě, aby se minimalizovala celková ztráta a zvýšila přesnost modelu. Každá z těchto komponent společně zajišťuje, že neuronové sítě se mohou učit efektivně, adaptovat se a poskytovat přesné predikce při řešení zadaných úloh. \cite{CNNConcepts, CNNConcepts2}
 
@@ -1379,7 +1377,14 @@ Měření vlivu předzpracování obrazu v předchozí části přineslo velmi z
 
 Stejně jako v předešlé části bylo trénováno několik variant modelů, počínaje modelem trénovaným na originálních datech, modelem trénovaným na zašuměných datech a modelech využívajících odšuměná data. Nejlepší model U-Net dosáhl na originálních snímcích pouze 65 \% Jaccard indexu, což jasně značí rozdíl náročnosti segmentace této úlohy na rozdíl od snímků plic. Na zašuměných snímcích byla hodnota Jaccard indexu mnohem nižší, konkrétně 55 \%. Z výsledku je patrné, že šum velmi ztížil modelu schopnost rozpoznat zuby ve snímku a správně je segmentovat.
 
-Výsledky technik pro předzpracování byly velmi zajímavé. Předzpracování pomocí modelu architektury DnCNN dosáhlo Jaccard indexu přibližně 64 \%, což je srovnatelné s výsledky na originálních snímcích. Je tedy vidět, že předzpracování obrazu má znatelný dopad na schopnost sítě U-Net segmentovat objekty. Model, využívající snímky předzpracované pomocí DAE dosáhl Jaccard indexu pouhých 58 \%, což je mírné zlepšení oproti zašuměným snímkům, avšak nižší v porovnání s DnCNN. Pravděpodobně tato složitější architektura nebyla vystavena dostatečnému množství trénovacích dat. Nejlepších výsledků bylo dosaženo pomocí techniky ensemble averaging, která dosáhla Jaccard indexu 65 \%. Tento výsledek je pozoruhodný, neboť překonal nejlepší model trénovaný na originálních snímcích. Tento výsledek by mohl naznačovat, že metody pro předzpracování snímků použité v ensemble averaging by mohly nejen odstranit šum přidaný do snímků uměle, ale také mohly zlepšit kvalitu samotných originálních snímků. Výsledný rozdíl je ale velmi nepatrný a jelikož je učení modelů nedeterministické, nejspíše se jedná pouze o náhodu.
+Výsledky technik pro předzpracování byly velmi zajímavé. Předzpracování pomocí modelu architektury DnCNN dosáhlo Jaccard indexu přibližně 64 \%, což je srovnatelné s výsledky na originálních snímcích. Je tedy vidět, že předzpracování obrazu má znatelný dopad na schopnost sítě U-Net segmentovat objekty. Model, využívající snímky předzpracované pomocí DAE dosáhl Jaccard indexu pouhých 58 \%, což je mírné zlepšení oproti zašuměným snímkům, avšak nižší v porovnání s DnCNN. Pravděpodobně tato složitější architektura nebyla vystavena dostatečnému množství trénovacích dat. Nejlepších výsledků bylo dosaženo pomocí techniky ensemble averaging, která dosáhla Jaccard indexu 65 \%. Tento výsledek je pozoruhodný, neboť překonal nejlepší model trénovaný na originálních snímcích. Tento výsledek by mohl naznačovat, že metody pro předzpracování snímků použité v ensemble averaging by mohly nejen odstranit šum přidaný do snímků uměle, ale také mohly zlepšit kvalitu samotných originálních snímků. Výsledný rozdíl je ale velmi nepatrný a jelikož je učení modelů nedeterministické, nejspíše se jedná pouze o náhodu. Ukázka učení modelů vícetřídní segmentace je zobrazena v grafu \ref{fig:MulticlassUnet_plot}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{Prilohy/Obrazky/Jaccard_index_multiclass_unet.png}
+    \caption{Graf zobrazující průběh učení modelů vícetřídní segmentace. Z grafu je patrné, že učení na zašuměných datech bylo náročnější v porovnání s ostatními modely.}
+    \label{fig:MulticlassUnet_plot}
+\end{figure}
 
 V průběhu experimentů byly rovněž aplikovány různé techniky augmentace dat, které měly za cíl zvýšit rozmanitost trénovací sady a zlepšit schopnost modelů generalizovat. Nicméně, augmentace dat měly pouze minimální dopad na výkonnost a správnost predikcí, přinášející zlepšení přibližně o 1 \% Jaccard indexu.
 
