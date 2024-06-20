@@ -260,66 +260,17 @@ The main objective of this thesis is to measure the impact of image preprocessin
 
 \tableofcontents
 
-%-----------------------------------------------------------------------------%
-	%\addchap{Úvod}
-	%
-	%\chapter{Historie}
-	%    \section{Propaganda a dezinformace}
-	%            \subsection{Propaganda}
-	%            \subsection{Dezinformace}
-	%                \subsubsection{Dezinformace %a misinformace}
-	%     \section{Dezinformace napříč historií}
-	     
-	
-% \chapter{Název kapitoly}
-	    %section{Název sekce}
-	    %   \begin{enumerate} % Číselný seznam
-        %   \item Název prvního bodu
-        %   \item Název druhého bodu
-        %   \item Název třetího bodu
-        %   \end{enumerate}
-	    %       \subsection{Název sub-sekce}
-	    %           \begin{itemize} % Bodový %seznam
-                    % \item  Název bodu
-                    % \item  Název bodu
-                    % \item  Název bodu
-                    % \end{itemize}
-                     
-   %\chapter{Název kapitoly s obrázkem}
-       %Správný postup
-       
-       %\begin{figure}
-       %    \centering
-       %    \resizebox{10cm}{!}{\includegraphics{Prilohy/Logo/LOGO_PRF_CZ_RGB_standard.jpg}}
-       %     \label{fig:logoPrF}
-       %    \caption{Celé logo - Přirodovědecká fakulta}
-       %\end{figure}
-       %
-       
-       %%Horší postup
-       
-       %\begin{figure}[H]
-       % \centering
-       %    \includegraphics[width=10.5cm]{Prilohy/Logo/LOGO_PRF_CZ_RGB_standard.jpg}
-       %    \label{fig:logoPrF}
-       %    \caption{Celé logo - Přírodovědecká fakulta}
-       %\end{figure}
-       
-       %Odkaz na obrázek v textu
-       
-       %\ref{fig:logoPrF}
-        
-    %\chapter{Název kapitoly s prvkem citace}
-	%Pro odkaz na citaci stačí vložit příkaz %\texttt{cite} \cite{Katuscakc2008}.
-	
-	%\chapter{Závěr}
-	
-%-----------------------------------------------------------------------------%	
-
 \addchap{Úvod}
+Segmentace lékařských snímků je klíčovou oblastí, která výrazně ovlivňuje kvalitu a efektivitu diagnostických procesů. V dnešní době, kdy je stále více kladen důraz na rychlou a přesnou diagnózu, se využití automatizovaných metod stává nezbytnou součástí při zpracování medicínských dat. Tradiční metody segmentace, založené na ručním označování, jsou časově velmi náročné a mohou být náchylné na tvorbu chyb. S rozvojem umělé inteligence a hlubokého učení se otevírá možnost využití pokročilých algoritmů, které mohou tento proces výrazně urychlit a zefektivnit. Tyto metody jsou ovšem velmi často aplikovány na data, která nemusí být ve vysoké kvalitě či mohou být určitým stylem degradována, a proto může být pro algoritmy obtížné vykonat zadanou úlohu správně.
+
+Hlavním cílem této práce bude prozkoumat, jakým způsobem může předzpracování obrazu a augmentace dat ovlivnit segmentaci rentgenových snímků. Vzhledem k různorodosti a složitosti lékařských dat je předzpracování klíčovým krokem, který může významně ovlivnit výkonnost použitých modelů. Někdy bývá problémem nedostatečné množství dat nebo jejich pořízení je náročné. Z tohoto důvodu je důležité prozkoumat vliv augmentace dat, která umožňuje rozšířit datovou sadu a zlepšit tak podmínky pro učení neuronových sítí.
+
+Práce bude strukturována dvou hlavních částí. V úvodní části budou představeny nejčastěji používané algoritmy pro vylepšení obrazu. Dále budou podrobně popsány vybrané metody, zaměřující se na redukci šumu v obraze. Informace o metodách umožní čtenáři pochopit princip fungování vybraných algoritmů, včetně způsobu jejich použití, výhod a nedostatků. Následně bude ukázán stručný přehled neuronových sítí, zejména konvolučních, zaměřených na zpracování obrazu a budou definovány hlavní komponenty, ze kterých se sítí skládají.
+
+Druhá část práce se zaměří na představení a analýzu datových sad, na implementaci a aplikaci popsaných metod a také na návrh architektur neuronových sítí pro redukci šumu ve snímcích. Datové sady budou podrobeny různým typům šumu, aby bylo možné simulovat scénáře z reálného prostředí, se kterými se modely mohou v praxi setkat. Závěrečná část bude věnována měření vlivu předzpracování obrazu a augmentace dat na segmentaci rentgenových snímků pomocí modelů neuronové sítě U-Net. Budou provedeny experimenty s různými konfiguracemi, aby bylo možné zjistit, jak předzpracování ovlivňuje výkon segmentačních modelů. Implementační část práce bude dostupná na následujícím odkaze \url{https://github.com/Cemonix/Impact-of-Preprocessing}, kde lze najít podrobnosti o použitých metodách a dosažených výsledcích.
 
 \chapter{Přehled metod předzpracování obrazu}
-Tato kapitola bude zaměřena na představení klíčových metod předzpracování obrazu, které hrají zásadní roli v procesu analýzy a zpracování rentgenových snímků. Předzpracování obrazu představuje kritický krok v řadě aplikací strojového učení a počítačového vidění, neboť ovlivňuje kvalitu a efektivitu následné analýzy. Metody předzpracování obrazu mohou výrazně zlepšit kvalitu dat a zvýšit přesnost detekce objektů, segmentace obrazu či klasifikace. Specifický výběr těchto technik je klíčový pro zjištění přesnosti a efektivity moderních metod počítačového vidění, včetně strojového učení a hlubokého učení, které jsou stále častěji aplikovány na širokou škálu problémů v oblasti zpracování obrazu. Zejména v kontextu rentgenových snímků může předzpracování pomoci překonat některé běžné výzvy, jako je nízký kontrast, šum, nebo artefakty, které mohou snížit kvalitu obrazu a tím ovlivnit diagnózu nebo automatickou analýzu.\cite{ImportanceOfImageProcessing}
+Tato kapitola se zabývá představením klíčových metod předzpracování obrazu, které hrají zásadní roli v procesu analýzy a zpracování rentgenových snímků. Předzpracování obrazu představuje kritický krok v řadě aplikací strojového učení a počítačového vidění, neboť ovlivňuje kvalitu a efektivitu následné analýzy. Metody předzpracování obrazu mohou výrazně zlepšit kvalitu dat a zvýšit přesnost detekce objektů, segmentace obrazu či klasifikace. Specifický výběr těchto technik je klíčový pro zjištění přesnosti a efektivity moderních metod počítačového vidění, včetně strojového učení a hlubokého učení, které jsou stále častěji aplikovány na širokou škálu problémů v oblasti zpracování obrazu. Zejména v kontextu rentgenových snímků může předzpracování pomoci překonat některé běžné výzvy, jako je nízký kontrast, šum, nebo artefakty, které mohou snížit kvalitu obrazu a tím ovlivnit diagnózu nebo automatickou analýzu.\cite{ImportanceOfImageProcessing}
 
 \section{Klasické metody předzpracování obrazu}
 Následující sekce se zabývá představením klasických metod a technik, které jsou využívány pro úpravu a zlepšení kvality obrazových dat před jejich dalším zpracováním. Budeme se tedy věnovat různým přístupům filtrace obrazu, metodám redukce šumu či zaostření obrazu, které jsou fundamentální pro analýzu a interpretaci obrazových dat. Přestože se jedná o metody, které mohou být považovány za základní, jejich správná aplikace a kombinace mohou výrazně zlepšit výslednou kvalitu obrazu a přispět k efektivnějšímu rozpoznávání vzorů a objektů v obrazových datech. Podrobně prozkoumáme každou z těchto metod, přičemž budeme klást důraz na jejich význam pro přípravu dat k dalšímu zpracování.
@@ -1468,15 +1419,15 @@ Další zjištění spočívalo v použití metody ensemble averaging. Očekáva
 V neposlední řadě je nutné podotknout, že výkon architektury U-Net při segmentaci zubů byl výrazně horší ve srovnání se segmentací plic. To může ukazovat na fakt, že tato architektura není dostatečná pro úlohu tohoto rozsahu nebo na příliš malou datovou sadu, která nezahrnovala všechna specifika zubů.
 
 \chapter{Závěr}
-Hlavním cílem této diplomové práce bylo zjistit jaký vliv má předzpracování obrazu a augmentace dat na segmentaci rentgenových snímků. Předmětem zkoumání bylo měření vlivu technik založených na standardních metodách a také modelech využívajících neuronové sítě v závislosti na míře ovlivnění výkonu modelů neuronové sítě architektury U-Net pro segmentaci obraz.
+Hlavním cílem této diplomové práce bylo zjistit jaký vliv má předzpracování obrazu a augmentace dat na segmentaci rentgenových snímků. Předmětem zkoumání bylo měření vlivu technik založených na standardních metodách a také modelech využívajících neuronové sítě v závislosti na míře ovlivnění výkonu modelů architektury U-Net pro segmentaci obrazu.
 
-V úvodní části práce byla pozornost věnována primárně vybraným standardních algoritmů pro vylepšení obrazu a redukci šumu a také byl ukázán jejich princip fungování. V návaznosti se práce zaměřila na představení základního přehledu neuronových sítí, využívaných zejména pro práci s obrazovými daty, podrobně byly popsány jejich hlavní komponenty, struktura a funkčnost. V neposlední řadě byly vylíčeny techniky augmentace dat, které zvyšují rozmanitost tréninkových sad a podporují lepší generalizaci modelů.
+V úvodní části práce byla pozornost věnována primárně vybraným standardním algoritmům, vylepšující obraz a redukující šum, se zaměřením na základní principy jejich fungování. V návaznosti se práce zaměřila na představení základního přehledu neuronových sítí, využívaných zejména pro práci s obrazovými daty, podrobně byly popsány jejich hlavní komponenty, struktura a funkčnost. V neposlední řadě byly vylíčeny techniky augmentace dat, které zvyšují rozmanitost tréninkových sad a podporují lepší generalizaci modelů.
 
 Začátek druhé kapitoly byl zaměřen na popis dvou vybraných datových sad, které obsahovaly rentgenové snímky plic a panoramatické snímky zubů. Zmíněné datové sady reprezentovaly dvě úrovně složitosti problémů, aby bylo možné důkladně prozkoumat vliv předzpracování dat, a zda je neuronová síť U-Net schopna adaptovat se na degradována obrazová data. Na rentgenové snímky z datových sad byly aplikovány tři druhy nejčastěji se vyskytujících šumů v rentgenových snímcích samostatně nebo v kombinaci. Z popsaných standardních metod byly následně vybrány ty, které se ukázaly jako nejúčinnější při redukci šumu ve vytvořených datech a byla z nich vytvořena metoda zvaná \textit{ensemble averaging}. Zvláštní pozornost byla věnována implementaci vybraných architektur neuronových sítí pro redukci šumu, jako je autoenkodér pro redukci šumu (\textit{DAE}) a konvoluční neuronová síť pro redukci šumu (\textit{DnCNN}), jenž se staly hlavním bodem zájmu při zlepšování kvality obrazových dat.
 
 V poslední části práce byl měřen vliv předzpracování dat na výkonnost modelů neuronové sítě U-Net pro segmentaci obrazu. Nejprve byly provedeny experimenty s binární segmentací rentgenových snímků plic, které sloužily pro zjištění, zda je nutné používat techniky předzpracování i pro snadné úlohy segmentace. Poté se práce zaměřila na složitější úlohu segmentace zubů, kde obtížnost nespočívala pouze v ohodnocení samotných zubů, ale také v menší velikosti datové sady. Na této úloze bylo jasně znatelné zlepšení v případě použití technik pro předzpracování obrazu, avšak augmentace dat přispěla k výkonnosti modelů jen mírně. Výsledky naznačily, že pro takto složité úlohy je potřeba jak kvalitní předzpracování dat, tak i dostatečně velká a rozmanitá datová sada.
 
-Celkově tato práce ukázala, že účinnost předzpracování a augmentace dat závisí na složitosti zadané úlohy, schopnosti dané architektury či velikosti datové sady. V případě složitých úloh či nedostatku některého ze zmíněných faktorů může předzpracování obrazu zlepšit výkonnost segmentačních modelů. Tyto poznatky přispívají k lepšímu porozumění role předzpracování a augmentace dat v oblasti segmentace rentgenových snímků a poskytují základ pro další výzkum a praktické aplikace v této oblasti.
+Celkově tato práce ukázala, že účinnost předzpracování a augmentace dat závisí na složitosti zadané úlohy, schopnosti dané architektury a velikosti datové sady. V případě složitých úloh či nedostatku některého ze zmíněných faktorů může předzpracování obrazu zlepšit výkonnost segmentačních modelů. Tyto poznatky přispívají k lepšímu porozumění role předzpracování a augmentace dat v oblasti segmentace rentgenových snímků a poskytují základ pro další výzkum a praktické aplikace v této oblasti.
 
 \printbibliography[title=Seznam použitých zdrojů]
 
