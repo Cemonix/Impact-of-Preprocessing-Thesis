@@ -318,7 +318,7 @@ Základní myšlenka CLAHE spočívá v rozdělení obrazu na malé, kontextově
 
 Jedním z klíčových aspektů CLAHE je výběr „clip limitu“, což je parametr, který omezuje míru zvýšení kontrastu. Tento limit se obvykle definuje jako násobek průměrné hodnoty histogramu a jeho správné nastavení je zásadní pro dosažení optimálního výsledku. \cite{GraphicsGems}
 
-\begin{figure}[ht]
+\begin{figure}[h]
     \centering
     \includegraphics[width=\linewidth]{Prilohy/Obrazky/ImageEnhancement.png}
     \caption{Ukázka metod ekvalizace histogramu na rentgenovém snímku. CLAHE demonstruje lepší zachování detailů a kontrastu v porovnání s tradiční ekvalizací histogramu. (zdrojový snímek převzat z datasetu \cite{LungDataset})}
@@ -594,7 +594,7 @@ Lokálně adaptivní mediánový filtr se ukazuje jako výrazně efektivní při
 
 Nicméně, stejně jako většina pokročilých metod zpracování obrazu, i tento filtr má své nevýhody. Především je to jeho výpočetní náročnost, která může být limitující pro aplikace v reálném čase nebo při zpracování velkých datasetů. Navíc, efektivní využití filtru vyžaduje pečlivý výběr parametrů, což může vyžadovat pokročilé znalosti a experimentální ladění pro dosažení optimálních výsledků. \cite{LocalAdaptiveMedianFilter}
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth]{Prilohy/Obrazky/NoiseReduction.png}
     \caption{Snímky demonstrují účinky popsaných filtrů na kvalitu obrazu v porovnání s originálním snímkem a snímkem po umělém přidání šumu, aby se simulovalo běžné zkreslení vznikající během akvizice obrazu. (zdrojový snímek převzat z datasetu \cite{LungDataset})}
@@ -622,7 +622,7 @@ Následující sekce bude zaměřena na nejčastěji využívané architekty neu
 \subsection{Úvod do konvolučních neuronových sítí}
 Neuronové sítě jsou základním stavebním prvkem moderního strojového učení a mají zásadní význam pro rozvoj oblastí jako je zpracování přirozeného jazyka či obrazu, rozpoznávání objektů v obraze, při analýze signálu, v robotice a mnoha jiných důležitých oborech. Tyto systémy jsou inspirovány strukturou a funkcí lidského mozku a jsou navrženy tak, aby modelovaly složité vzory a vztahy v datech. Strukturálně jsou neuronové sítě složeny z vrstev neuronů, což jsou jednotky zpracovávající informace, které jsou propojeny spojeními, ohodnocenými vahami. Tento vztah je ilustrován na obrázku \ref{fig:nn_components}.
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth]{Prilohy/Obrazky/NNComponents.png}
     \caption{Ilustrace neuronové jednotky, ukazující základní komponenty jako vstup, váhy, bias, aktivační funkci a výstup. (převzato z \cite{NNComponentsIMG} pod licencí CC BY-SA 4.0)}
@@ -827,7 +827,7 @@ Všechny tyto faktory přidávají další variabilitu a složitost pro trénova
 \subsubsection{Popis datové sady}
 Datová sada zahrnuje téměř 600 rentgenových snímků zubů, z čehož bude použito 500 vybraných snímků s jejich segmentačními maskami. Tyto snímky jsou v nižší kvalitě ve srovnání s rentgeny plic. Snímky jsou anotovány jak pro dětské, tak i pro dospělé zuby, přičemž je použito stejné označení pro oba typy zubů, tedy například dospělý zub 11 má stejnou značku jako dětský zub 11. I když toto označení není ideální, pro naše účely nepředstavuje problém.
 
-\begin{figure}[ht]
+\begin{figure}[h]
     \centering
     \includegraphics[width=\linewidth]{Prilohy/Obrazky/FDITeethLabels.png}
     \caption{Úkázka jednotlivých zubů s příslušným označením v podobě čísel jdoucím po směru hodinových ručiček. (převzato z \cite{teethLabelImg})}
@@ -841,18 +841,20 @@ Následující sekce je soustředěna na přidávání šumu do snímků ve vytv
 
 Ve vytvořené datové sadě se nachází 5000 rentgenů hrudníku a 500 rentgenů zubů. Na snímky budou aplikovány zmíněné typy šumů následovně:
 
-\begin{table}[H]
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|}
+        \hline
+        \textbf{Část datasetu v \%} & \textbf{Typ aplikovaného šumu}                    \\ \hline
+        0-20   & Na snímky v tomto rozsahu bude aplikován šum typu speckle.             \\ \hline
+        20-40  & Další část bude ovlivněna typem šumu soli a pepře.                     \\ \hline
+        40-60  & Tento rozsah bude zašuměn Poissonův šumem.                             \\ \hline
+        60-80  & Zde bude aplikována náhodná kombinace dvou typů šumu.                  \\ \hline
+        80-100 & Poslední část snímků bude zašuměna všemi třemi typy šumu.              \\ 
+        \hline
+    \end{tabular}
     \caption{Detailní popis aplikace šumu na snímky v datové sadě}
     \label{table:noiseTypes}
-    \begin{tabular}{@{}ll@{}}
-        \textbf{Část datasetu (\%)} & \textbf{Typ aplikovaného šumu} \\
-        0-20   & Na snímky v tomto rozsahu bude aplikován šum typu speckle. \\
-        20-40  & Další část bude ovlivněna typem šumu soli a pepře. \\
-        40-60  & Tento rozsah bude zašuměn Poissonův šumem. \\
-        60-80  & Zde bude aplikována náhodná kombinace dvou typů šumů. \\
-        80-100 & Poslední část snímků bude narušena kombinací všech tří zmíněných šumů. \\ 
-               & Tyto snímky budou představovat největší míru komplexity šumu. \\
-    \end{tabular}
 \end{table}
 
 Tento postup umožňuje vytvoření různých úrovní obtížnosti při odstraňování šumu, což je klíčové pro vývoj a vyhodnocení robustních modelů pro redukci šumu.
@@ -935,7 +937,7 @@ Po instalaci Poetry je nutné se přesunout do kořenového adresáře projektu 
 \subsubsection{Použité knihovny}
 V tomto projektu jsem použil několik důležitých knihoven. Nejvýznamnější z nich je \textbf{PyTorch Lightning}, která usnadňuje implementaci neuronových sítí a byla vybrána pro snadné a přehledné trénování modelů. Další důležité knihovny zahrnují již dříve zmíněný NumPy pro numerické výpočty, scikit-image pro zpracování snímků a Matplotlib pro vizualizaci dat. Následující tabulka ukazuje kompletní přehled použitých závislostí v této práci:
 
-\begin{table}[H]
+\begin{table}[h]
     \centering
     \begin{tabular}{|l|l|}
     \hline
@@ -957,7 +959,7 @@ V tomto projektu jsem použil několik důležitých knihoven. Nejvýznamnějš�
     \textbf{pywavelets}     & Knihovna pro práci s vlnkovou transformací.             \\ \hline
     \textbf{numba}          & Knihovna pro akceleraci numerických výpočtů.            \\ \hline
     \end{tabular}
-    \caption{Přehled použitých knihoven}
+    \caption{Přehled použitých nástrojů}
     \label{tab:Used_libs}
 \end{table}
 
@@ -1296,6 +1298,8 @@ Architektura DAE je detailně znázorněna na diagramu \ref{fig:DAE}. Diagram il
     \label{fig:DAE}
 \end{figure}
 
+\clearpage
+
 \subsection{Výsledky neuronových sítí DnCNN a DAE při redukování šumu v rentgenových snímcích}
 Pro vyhodnocení výkonu natrénovaných modelů neuronových sítí je nezbytné stanovit kvalitu samotných zašuměných snímků v porovnání s jejich originálními protějšky. Tato základní úroveň pomáhá pochopit rozsah zlepšení dosaženého modely pro odstranění šumu. Průměrná hodnota naměřené metriky PSNR pro zašuměné snímky je zhruba 25dB a průměrná hodnota SSIM vychází přibližně 60 \%.
 
@@ -1323,7 +1327,7 @@ Následně byla hodnocena výkonnost autoenkodér pro redukci šumu (DAE), což 
     \centering
     \begin{tabular}{|l|l|l|}
     \hline
-    \textbf{Augmentace}  & \textbf{Popis}                            & \textbf{Pravděpodobnost}  \\ \hline
+    \textbf{Augmentace}  & \textbf{Popis}                            & \textbf{Pravděpodobnost}   \\ \hline
     Gaussovský blur      & Aplikuje Gaussovské rozostření.           &  20 \%                     \\ \hline
     Ostrost obrazu       & Upravuje ostrost obrazu.                  &  20 \%                     \\ \hline
     Autokontrast         & Automaticky vyrovnává kontrast snímků.    &  30 \%                     \\ \hline
@@ -1390,7 +1394,7 @@ V průběhu experimentů byly rovněž aplikovány různé techniky augmentace d
 
 Níže je uvedena tabulka \ref{tab:MulticlassUnetResults}, která zobrazuje výsledky pěti nejlépe natrénovaných modelů:
 
-\begin{table}[ht]
+\begin{table}[h]
     \centering
     \begin{tabular}{|l|c|}
         \hline
