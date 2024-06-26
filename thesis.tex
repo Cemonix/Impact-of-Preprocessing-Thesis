@@ -265,7 +265,7 @@ Segmentace lékařských snímků je klíčovou oblastí, která výrazně ovliv
 
 Hlavním cílem této práce bude prozkoumat, jakým způsobem může předzpracování obrazu a augmentace dat ovlivnit segmentaci rentgenových snímků. Vzhledem k různorodosti a složitosti lékařských dat je předzpracování klíčovým krokem, který může významně ovlivnit výkonnost použitých modelů. Někdy bývá problémem nedostatečné množství dat nebo jejich pořízení je náročné. Z tohoto důvodu je důležité prozkoumat vliv augmentace dat, která umožňuje rozšířit datovou sadu a zlepšit tak podmínky pro učení neuronových sítí.
 
-Práce bude strukturována dvou hlavních částí. V úvodní části budou představeny nejčastěji používané algoritmy pro vylepšení obrazu. Dále budou podrobně popsány vybrané metody, zaměřující se na redukci šumu v obraze. Informace o metodách umožní čtenáři pochopit princip fungování vybraných algoritmů, včetně způsobu jejich použití, výhod a nedostatků. Následně bude ukázán stručný přehled neuronových sítí, zejména konvolučních, zaměřených na zpracování obrazu a budou definovány hlavní komponenty, ze kterých se sítí skládají.
+Práce bude strukturována dvou hlavních částí. V úvodní části budou představeny nejčastěji používané algoritmy pro vylepšení obrazu. Dále budou podrobně popsány vybrané metody, zaměřující se na redukci šumu v obraze. Informace o metodách umožní čtenáři pochopit princip fungování vybraných algoritmů, včetně způsobu jejich použití, výhod a nedostatků. Následně bude ukázán stručný přehled neuronových sítí, zejména konvolučních, zaměřených na zpracování obrazu a budou definovány hlavní komponenty, ze kterých se sítě skládají.
 
 Druhá část práce se zaměří na představení a analýzu datových sad, na implementaci a aplikaci popsaných metod a také na návrh architektur neuronových sítí pro redukci šumu ve snímcích. Datové sady budou podrobeny různým typům šumu, aby bylo možné simulovat scénáře z reálného prostředí, se kterými se modely mohou v praxi setkat. Závěrečná část bude věnována měření vlivu předzpracování obrazu a augmentace dat na segmentaci rentgenových snímků pomocí modelů neuronové sítě U-Net. Budou provedeny experimenty s různými konfiguracemi, aby bylo možné zjistit, jak předzpracování ovlivňuje výkon segmentačních modelů. Implementační část práce bude dostupná na následujícím odkaze \url{https://github.com/Cemonix/Impact-of-Preprocessing}, kde lze najít podrobnosti o použitých metodách a dosažených výsledcích.
 
@@ -291,7 +291,7 @@ Cílem ekvalizace histogramu je aplikovat transformaci na původní histogram ob
     L & počet možných úrovní intenzity pixelů (např. $L = 256$ pro 8 bitové obrazy)
 \end{conditions}
 
-Tímto způsobem transformace zvýší kontrast obrazu tak, že "roztáhne" rozložení intenzit pixelů přes celý dostupný rozsah, což zvýrazní detaily a zlepší vizuální vnímání obrazu. Ekvalizace histogramu tak přináší výrazné zlepšení v oblastech s nízkým kontrastem a umožňuje lepší vizualizaci detailů, což je zásadní pro dalšího zpracování obrazu. \cite{ComputerVisionMetrics} \cite{ComputerVisionForX-RayTesting}
+Tímto způsobem transformace zvýší kontrast obrazu tak, že ``roztáhne'' rozložení intenzit pixelů přes celý dostupný rozsah, což zvýrazní detaily a zlepší vizuální vnímání obrazu. Ekvalizace histogramu tak přináší výrazné zlepšení v oblastech s nízkým kontrastem a umožňuje lepší vizualizaci detailů, což je zásadní pro dalšího zpracování obrazu. \cite{ComputerVisionMetrics} \cite{ComputerVisionForX-RayTesting}
 
 \begin{algorithm}
     \caption{Ekvalizace histogramu}
@@ -406,14 +406,14 @@ Existuje několik typů šumu, které se mohou ve snímcích vyskytovat. Tyto š
 Pro efektivní redukci šumu ve snímcích jsou k dispozici různé typy filtrů, které se liší svým principem a účinností v závislosti na konkrétním typu šumu. Filtrování šumu se dělí na:
 
 \begin{itemize}
-    \item \textbf{Lineární filtrování}, také známo jako konvoluční filtrování, aplikuje lineární operátor na skupinu sousedících pixelů v obrazu s cílem vyhladit nebo zvýraznit určité vlastnosti obrazu. Hlavní principem lineárních filtrů je konvoluce obrazu s jádrem filtru či maskou, což je malá matice daného rozměru, která určuje váhy pro každý pixel v okolí. Tyto váhy určují, jakým způsobem okolní pixely ovlivňují hodnotu pixelu výstupního obrazu. Hlavní výhodou lineárních filtrů je jejich jednoduchost a efektivita, což je dělá vhodnými pro rychlé a efektivní zpracování obrazu. Nicméně, lineární filtry mohou způsobovat neostrost hran and detailů ve snímcích. \cite{ImageDenoisingTechniques, XRayImageProcessing}
+    \item \textbf{Lineární filtrování}, také známo jako konvoluční filtrování, aplikuje lineární operátor na skupinu sousedících pixelů v obrazu s cílem vyhladit nebo zvýraznit určité vlastnosti obrazu. Hlavní principem lineárních filtrů je konvoluce obrazu s jádrem filtru či maskou, což je malá matice daného rozměru, která určuje váhy pro každý pixel v okolí. Tyto váhy určují, jakým způsobem okolní pixely ovlivňují hodnotu pixelu výstupního obrazu. Hlavní výhodou lineárních filtrů je jejich jednoduchost a efektivita, což je dělá vhodnými pro rychlé a efektivní zpracování obrazu. Nicméně, lineární filtry mohou způsobovat neostrost hran a detailů ve snímcích. \cite{ImageDenoisingTechniques, XRayImageProcessing}
     
     \begin{equation}
         I_{filtered}(x, y) = \sum_{i=-a}^{a} \sum_{j=-b}^{b} K(i, j) \cdot I(x-i, y-j)
     \end{equation}
     \begin{conditions}
         I_{filtered}(x, y) & intenzita pixelu na pozici (x, y) ve filtrovaném snímku \\
-        K(i, j) & koeficienty kernelu \\
+        K(i, j) & koeficienty konvoluční masky (kernelu) \\
         I(x-i, y-j) & intenzita pixelu v původním snímku v okolí pixelu (x, y) 
     \end{conditions}
     \item \textbf{Nelineární filtrování} je alternativní přístup k redukci šumu, který se zaměřuje na zachování hran a detailů v obraze. Nelineární filtry jsou schopny zacházet s nelineárními vztahy mezi pixely a jsou schopny lépe zachovat důležité strukturální vlastnosti obrazu. Nelineární filtry jsou proto obzvláště účinné při redukci impulzního či speckle šumu. \cite{ImageDenoisingTechniques, XRayImageProcessing}
@@ -422,7 +422,8 @@ Pro efektivní redukci šumu ve snímcích jsou k dispozici různé typy filtrů
 Níže jsou uvedeny některé z nejčastěji používaných filtrů pro redukci šumu ve snímcích a na obrázku \ref{fig:noise_reduction_filters} je předvedeno jejich použítí.
 
 \subsubsection{Gaussovský filtr}
-Gaussovský filtr reprezentuje jeden z nejčastěji používaných lineárních filtrů pro redukci šumu ve snímcích. Tento filtr je založen na aplikaci Gaussova jádra na obraz, což umožňuje odstranit vysokofrekvenční šum. Gaussovský filtr je založen na principu aplikace Gaussovy funkce na vstupní obraz, která počítá vážený průměr okolí každého pixelu, s nejvyšší váhou soustředěnou na samotný pixel a se zmenšujícími se váhami pro sousední pixely na základě jejich prostorové vzdálenosti od středového pixelu. Gaussovský filtr je založen na konvoluci obrazu s Gaussovým jádrem, které je definováno jako:
+Gaussovský filtr reprezentuje jeden z nejčastěji používaných lineárních filtrů pro redukci šumu ve snímcích. Tento filtr je založen na aplikaci Gaussova jádra na obraz. Jádro, někdy nazýváno kernel, je symetrická matice s hodnotami vygenerovanými podle dvourozměrné Gaussovské funkce, která se používá pro konvoluci s obrazem za účelem dosažení efektu vyhlazení, kde středové pixely mají největší váhu a váha se snižuje s rostoucí vzdáleností od středu, což vede k účinnému potlačení vysokofrekvenčního šumu. Gaussovský filtr je definován vzorcem:
+
 \begin{equation}
     G(x, y) = \frac{1}{2\pi\sigma^2} e^{-\frac{x^2 + y^2}{2\sigma^2}}
 \end{equation}
@@ -453,7 +454,7 @@ Přestože je Gaussovský filtr velmi účinný při redukci šumu, volba směro
 \subsubsection{Bilaterální filtr}
 Bilaterální filtrování je nelineární technika pro vyhlazování obrazu, která zachovává hrany a redukuje šum (metoda se specializuje na redukci Gaussovského šumu). Na rozdíl od tradičních lineárních filtrů, které aplikují uniformní konvoluci napříč obrazem, bilaterální filtr kombinuje dva hlavní koncepty: prostorovou blízkost a podobnost intenzity. 
 
-Podobně jako Gaussův filtr, bilaterální filtr používá Gaussovu funkci k vážení pixelů založené na jejich prostorové vzdálenosti od centrálního pixelu. Tím pádem, čím jsou pixely blíže k centrálnímu pixelu, tím větší váhu mají. Unikátní pro bilaterální filtr je fakt, že váhy jsou také přizpůsobeny na základě rozdílu intenzit mezi sousedními pixely a centrálním pixelem. Pixely s podobnou intenzitou jako centrální pixel získávají vyšší váhu, což umožňuje zachování ostrých hran a detailů. Pro každý pixel ve zpracovávaném obrazu filtr vyhodnotí jeho sousedy a aplikuje váhy založené na dvou zmíněných kritériích. \cite{BilateralFilter}
+Podobně jako Gaussův filtr, bilaterální filtr používá Gaussovu funkci k vážení pixelů, založené na prostorové vzdálenosti pixelů od centrálního pixelu. Tím pádem, čím jsou pixely blíže k centrálnímu pixelu, tím větší váhu mají. Unikátní pro bilaterální filtr je fakt, že váhy jsou také přizpůsobeny na základě rozdílu intenzit mezi sousedními pixely a centrálním pixelem. Pixely s podobnou intenzitou jako centrální pixel získávají vyšší váhu, což umožňuje zachování ostrých hran a detailů. Pro každý pixel ve zpracovávaném obrazu filtr vyhodnotí jeho sousedy a aplikuje váhy založené na dvou zmíněných kritériích. \cite{BilateralFilter}
 
 Matematický vzorec pro bilaterální filtr aplikovaný na obraz lze vyjádřit jako:
 \begin{equation}
@@ -462,11 +463,11 @@ Matematický vzorec pro bilaterální filtr aplikovaný na obraz lze vyjádřit 
 \begin{conditions}
     BF[I](p) & hodnota pixelu po aplikaci bilaterálního filtru \\
     W_p & je normalizační faktor zajišťující, že součet vah je roven jedné \\
-    G_{\sigma_s} & prostorová Gaussova funkce, která snižuje vliv vzdálených pixelů na základě prostorové vzdálenosti ||p-q|| se standardní odchylkou $\sigma_s$ \\
-    G_{\sigma_r} & rozsahová Gaussova funkce, která redukuje vliv pixelů q na základě rozdílu intenzit $|I_p-I_q|$ se standardní odchylkou $\sigma_r$ \\
-    S & sousední pixely zpracovávaného pixelu p \\
-    I_p & hodnota pixelu p \\
-    I_q & hodnota pixelu q \\
+    G_{\sigma_s} & prostorová Gaussova funkce, která snižuje vliv vzdálených pixelů na základě prostorové vzdálenosti $||p-q||$ se standardní odchylkou $\sigma_s$ \\
+    G_{\sigma_r} & rozsahová Gaussova funkce, která redukuje vliv pixelů $q$ na základě rozdílu intenzit $|I_p-I_q|$ se standardní odchylkou $\sigma_r$ \\
+    S & sousední pixely zpracovávaného pixelu $p$ \\
+    I_p & hodnota pixelu $p$ \\
+    I_q & hodnota pixelu $q$ \\
 \end{conditions}
 
 \begin{equation}
@@ -606,7 +607,7 @@ Standardní metody pro odstranění šumu mají několik omezení, která mohou 
 
 Většina standardních metod je navržena tak, aby se zaměřovala na specifické typy šumu. Například mediánový filtr je efektivní pro odstranění impulzního šumu, ale nemusí být účinný proti jiným typům. Toto zaměření na specifické typy šumu znamená, že pokud není typ šumu v obraze znám, může být obtížné vybrat správnou metodu pro jeho odstranění. V reálných aplikacích často není možné předem určit, jaký typ šumu bude v obraze přítomen, což výrazně omezuje účinnost těchto metod.
 
-Dalším problémem je přítomnost více typů šumu současně v jednom obraze. Například, lékařské snímky mohou obsahovat kombinaci šumu typu speckle, Poissonova šumu a dalších artefaktů. Standardní metody, které jsou navrženy pro odstranění jednoho typu šumu, nemusí být schopny efektivně zvládnout takovou kombinaci. Použití jedné metody může zlepšit jednu část obrazu, ale zároveň zhoršit jinou. Tento problém kombinace šumů vede k potřebě metod, které jsou schopny efektivně řešit více typů šumu současně, nebo metod, které kombinují výstupy různých filtrů pro dosažení lepších výsledků.
+Dalším problémem je přítomnost více typů šumu současně v jednom obraze. Například, lékařské snímky mohou obsahovat kombinaci šumu typu speckle, Poissonova šumu a dalších artefaktů \cite{MostCommonNoises}. Standardní metody, které jsou navrženy pro odstranění jednoho typu šumu, nemusí být schopny efektivně zvládnout takovou kombinaci. Použití jedné metody může zlepšit jednu část obrazu, ale zároveň zhoršit jinou. Tento problém kombinace šumů vede k potřebě metod, které jsou schopny efektivně řešit více typů šumu současně, nebo metod, které kombinují výstupy různých filtrů pro dosažení lepších výsledků.
 
 \section{Neuronové sítě pro předzpracování obrazu}
 Předchozí sekce byla věnována klasickým metodám předzpracování obrazu, kde byl brán důraz na techniky pro vylepšení obrazu a odstranění či redukci různých typů šumu ze snímků. Tato sekce se bude zabývat pokročilým oborem pro předzpracování obrazu, kterým jsou neuronové sítě.
@@ -647,7 +648,7 @@ Základem neuronové sítě je její architektura, která je definována několi
             \item \textbf{Skyté vrstvy (Hidden layers)} jsou mezi vstupní a výstupní vrstvou a jejich úkolem je zpracování signálů přijatých od vstupní vrstvy. Komplexnost a hloubka těchto vrstev jsou klíčové pro schopnost sítě učit se složité vzory.
             \item \textbf{Výstupní vrstva (Output layer) } je poslední vrstva, která generuje predikce určené neuronovou sítí. Například v klasifikačních úlohách může tato vrstva používat softmax funkci\footnote{Softmax funkce se často používá jako aktivační funkce v poslední vrstvě neuronové sítě při klasifikačních úlohách. Tato funkce převádí výstupní hodnoty neuronů na pravděpodobnostní rozdělení mezi různými třídami. Matematický vzorec pro softmax funkci je definován následovně: $\text{softmax}(z_i) = \frac{e^{z_i}}{\sum_{j=1}^{N} e^{z_j}}$}.
         \end{itemize}
-    \item \textbf{Aktivační funkce (Activation function)} je důležitou složkou neuronových sítí, která umožňuje modelování nelineárních vztahů. Funkce, jako je sigmoid, tanh a ReLU (Rectified Linear Unit), jsou běžně používány k výpočtu výstupu z neuronů na základě vstupu a vah. Například, ReLU, která je definována jako $ReLU(x) = max(0, x)$, je populární pro svou schopnost rychle konvergovat během tréninku a minimalizovat problém mizejících gradientů\footnote{Mizející gradienty jsou problém, kdy gradient ztrátové funkce klesá exponenciálně rychle s každou vrstvou v síti, což způsobuje, že váhy v raných vrstvách se téměř neaktualizují. Tento jev výrazně zpomaluje trénink a může způsobit, že síť nedokáže efektivně učit složité vzory.}.
+    \item \textbf{Aktivační funkce (Activation function)} je důležitou složkou neuronových sítí, která umožňuje modelování nelineárních vztahů. Funkce, jako je logistická funkce (sigmoid), hyperbolický tangens (tanh) a ReLU (Rectified Linear Unit), jsou běžně používány k výpočtu výstupu z neuronů na základě vstupu a vah. Například, ReLU, která je definována jako $ReLU(x) = max(0, x)$, je populární pro svou schopnost rychle konvergovat během tréninku a minimalizovat problém mizejících gradientů\footnote{Mizející gradienty jsou problém, kdy gradient ztrátové funkce klesá exponenciálně rychle s každou vrstvou v síti, což způsobuje, že váhy v raných vrstvách se téměř neaktualizují. Tento jev výrazně zpomaluje trénink a může způsobit, že síť nedokáže efektivně učit složité vzory.}.
     \item \textbf{Ztrátová funkce (Loss function)}, někdy nazývaná penalizační funkce, poskytuje kvantitativní hodnocení toho, jak daleko jsou predikce neuronové sítě od skutečných hodnot. Během tréninku neuronové sítě je hlavním cílem minimalizace této funkce. Mezi běžné ztrátové funkce se řadí střední kvadratická chyba (MSE) pro regresní úkoly a cross-entropy pro klasifikační úkoly. 
     \item \textbf{Optimalizační algoritmus (Optimizer)} je základem učení neuronových sítí, protože určují, jak se síť učí z dat tím, že iterativně upravují váhy a biasy k minimalizaci ztrátové funkce. Stochastic Gradient Descent (SGD) provádí tuto úpravu tak, že v každém kroku tréninku náhodně vybere vzorek dat a spočítá gradient ztrátové funkce pouze na základě tohoto vzorku:
     Adam a RMSprop jsou pokročilejší varianty, které se snaží zlepšit konvergenci SGD tím, že upravují rychlost učení pro každý parametr individuálně, což může vést k rychlejšímu a stabilnějšímu učení, zejména v komplexních sítích.
@@ -685,9 +686,9 @@ Autoenkodéry se dělí na tři hlavní části:
         z = \sigma(W_e \cdot x + b_e)
     \end{equation}
     \begin{conditions}
-        W_e & matice vah enkodéru. \\
-        b_e & bias vektor enkodéru. \\
-        \sigma & nelineární aktivační funkce.
+        W_e & matice vah enkodéru \\
+        b_e & bias vektor enkodéru \\
+        \sigma & nelineární aktivační funkce
     \end{conditions}
     \item \textbf{Latentní prostor (bottleneck)} Srdcem autoenkodéru je jeho latentní prostor, v němž jsou vstupní data reprezentována ve své nejkomprimovanější podobě. Tato reprezentace poskytuje pohled na data v nižší dimenzi a zdůrazňuje jejich nejdůležitější atributy. Rozměrnost a konfigurace latentního prostoru jsou velmi důležité a ovlivňují, jak efektivně dokáže autokodér komprimovat a rekonstruovat data.
     \item \textbf{Dekodér} Proces dekódování se snaží co nejpřesněji rekonstruovat původní vstup z komprimované zakódované reprezentace. V této fázi se testuje kvalita naučených rysů a účinnost kódování. Cílem není dosáhnout dokonalé rekonstrukce, ale spíše vytvořit aproximaci, která zachová nejvýznamnější atributy původních dat. Tato schopnost je užitečná zejména v aplikacích, kde je pochopení základní struktury dat cennější než reprodukce přesné kopie. Dekódovací část rekonstruuje vstupní data $x'$ z latentní reprezentace $z$.
@@ -728,11 +729,11 @@ SSIM je definováno vzorcem níže:
     \text{SSIM}(x, y) = \frac{(\mu_x \mu_y + C_1)(2\sigma_{xy} + C_2)}{(\mu_x^2 + \mu_y^2 + C_1)(\sigma_x^2 + \sigma_y^2 + C_2)}
 \end{equation}
 \begin{conditions}
-    \mu_x & průměr x \\
-    \mu_y & průměr y \\
-    \sigma_x^2 & variance x \\
-    \sigma_y^2 & variance y \\
-    \sigma_{xy} & kovariance mezi x a y \\
+    \mu_x & průměr $x$ \\
+    \mu_y & průměr $y$ \\
+    \sigma_x^2 & variance $x$ \\
+    \sigma_y^2 & variance $y$ \\
+    \sigma_{xy} & kovariance mezi $x$ a $y$ \\
     C_1 & konstanta stabilizující dělení, pokud jsou průměry blízké nule \\
     C_2 & konstanta stabilizující dělení, pokud jsou variance blízké nule
 \end{conditions}
@@ -749,7 +750,7 @@ Pro vyhodnocení efektivity natrénovaných segmentačních modelů budu použí
 \end{conditions}
 
 \section{Obecné postupy augmentace dat}
-Augmentace dat neboli rozšiřování dat je klíčovou technikou v oblasti strojového učení, zejména v oblastech zpracování obrazu a počítačového vidění. Zahrnuje umělé rozšíření velikosti a rozmanitosti datové sady použitím řady transformací, které jsou aplikovány na vstupní data. Tato sekce se bude zabývat konceptem augmentace dat, důvody použití se zdůrazněním na přínos i omezení při aplikace augmentace a v neposlední řadě budou popsány jedny z nejpoužívanějších technik rozšiřování dat.
+Augmentace dat neboli rozšiřování dat je klíčovou technikou v oblasti strojového učení, zejména v oblastech zpracování obrazu a počítačového vidění. Zahrnuje umělé rozšíření velikosti a rozmanitosti datové sady použitím řady transformací, které jsou aplikovány na vstupní data. Tato sekce se bude zabývat konceptem augmentace dat, důvody použití se zdůrazněním na přínos i omezení při aplikaci augmentace a v neposlední řadě budou popsány jedny z nejpoužívanějších technik rozšiřování dat.
 
 \subsection{Augmentace dat}
 Augmentace dat je mocný nástroj používaný ve strojovém učení ke zvětšení velikosti a rozmanitosti datových sad, což je zvláště výhodné při trénování modelů hlubokého učení. Podstata augmentace dat spočívá v aplikaci řady deterministických nebo náhodných transformací na trénovací vzorky s cílem vytvořit nová, rozmanitá data. Tento proces pomáhá simulovat variabilitu dat, s níž se model může setkat v reálných scénářích, a tím zlepšuje jeho schopnost zobecňovat.
@@ -765,12 +766,12 @@ Zavedení realistických variací do trénovacích dat umožňuje modelům lépe
 \subsubsection{Omezení rozšiřování dat}
 Přestože augmentace dat nabízí řadu výhod, je důležité přistupovat k jejímu využití opatrně. Nevhodně zvolené metody rozšiřování dat mohou vést k zavádějícím nebo irelevantním změnám ve vstupních datech, což může způsobit, že se modely naučí nesprávné vzorce a budou generovat chybné predikce na nových datech. Kromě předchozích popsaných omezení může zvětšení datové sady vést ke zvýšení výpočetní náročnosti, zejména ve fázích trénování modelů. Složité transformace a generování velkého objemu augmentovaných dat vyžadují výkonnější hardware a delší trénovací časy, což může být v některých situacích nepraktické nebo finančně náročné.
 
-Například v projektu zaměřeném na detekci a klasifikaci vozidel v městské dopravě pomocí hlubokého učení byl učiněn pokus o zvětšení souboru dat použitím náhodného škálování snímků. Záměrem bylo zajistit, aby byl model odolný vůči změnám velikosti vozidla v důsledku vzdálenosti od kamery. Zvolený faktor škálování byl však příliš agresivní, neboť některá vozidla byla zmenšena na velikost, která neodpovídá reálným scénářům nebo byla zvětšena tak, že se nerealisticky překrývala s jinými objekty nebo hranicemi scény. Tato nesprávná aplikace vedla k několika problémům:
+Pro příklad můžu uvést smyšlený projekt zaměřený na detekci a klasifikaci vozidel v městské dopravě pomocí hlubokého učení, ve kterém bude učiněn pokus o zvětšení souboru dat použitím náhodného škálování snímků. Záměrem bude zajistit, aby byl model odolný vůči změnám velikosti vozidla v důsledku vzdálenosti od kamery. Zvolený faktor škálování ovšem bude příliš agresivní, neboť některá vozidla budou zmenšena na velikost, která neodpovídá reálným scénářům nebo budou zvětšena tak, že se budou nerealisticky překrývat s jinými objekty nebo hranicemi scény. Tato nesprávná aplikace povede k několika problémům:
 
 \begin{itemize}
-    \item \textbf{Zmatení modelu} Model začal špatně klasifikovat malá vozidla, jako jsou motocykly či kola ale také příliš velká vozidla, jako jsou autobusy nebo nákladní vozidla, protože měřítko těchto vozidel v augmentovaných obrázcích nesouhlasilo s typickými měřítky pozorovanými v reálných dopravních podmínkách. 
-    \item \textbf{Prostorová nekonzistence} Přehnané měřítko narušilo prostorové vztahy a proporce ve scéně, které jsou klíčové pro kontextové porozumění v úlohách detekce objektů.
-    \item \textbf{Neefektivnost tréninku} Model měl problémy během tréninku konvergovat, protože nadměrná variabilita ve velikostech objektů zavedená augmentací vedla k odchýlení při učení správných rysů, které definují různé typy vozidel ve standardních měřítcích. 
+    \item \textbf{Zmatení modelu} Model začne špatně klasifikovat malá vozidla, jako jsou motocykly či kola ale také příliš velká vozidla, jako jsou autobusy nebo nákladní vozidla, protože měřítko těchto vozidel v augmentovaných obrázcích nesouhlasí s typickými měřítky pozorovanými v reálných dopravních podmínkách. 
+    \item \textbf{Prostorová nekonzistence} Přehnané měřítko naruší prostorové vztahy a proporce ve scéně, které jsou klíčové pro kontextové porozumění v úlohách detekce objektů.
+    \item \textbf{Neefektivnost trénování} Model bude mít problémy během trénování konvergovat, protože nadměrná variabilita ve velikostech objektů zavedená augmentací povede k odchýlení při učení správných rysů, které definují různé typy vozidel ve standardních měřítcích. 
 \end{itemize}
 
 Tento příklad zdůrazňuje důležitost aplikace transformací, které odrážejí realistické variace. Augmentace dat by měla směřovat k napodobení skutečných variací, se kterými se model setkává v praxi, místo zavádění nepravděpodobných nebo extrémních podmínek, které nepomáhají při smysluplném učení. \cite{AugmentationBasics, AugmentationSurvey}
@@ -804,7 +805,7 @@ V této sekci budou představeny datové sady, na kterých bude měřen vliv př
 Tato datová sada je složena ze dvou různých zdrojů, z nichž každá přispívá svou jedinečností a obohacuje tak celkovou různorodost dat.
 
 \begin{itemize}
-    \item \textbf{První zdroj:} obsahuje 800 rentgenů hrudníku ve velmi vysoké kvalitě včetně odpovídajících segmentačních masek. Obrázky jsou dobře anotovány a poskytují jasné a přesné zobrazení plic, což je ideální pro přesnou segmentaci. Tato datová sada je dostupná na stránkách \href{https://www.kaggle.com/datasets/nikhilpandey360/chest-xray-masks-and-labels}{Kaggle} \footnote{Pro více informací k datové sadě viz také články \cite{LungDatasetNeeded, LungDatasetNeeded2}.}."
+    \item \textbf{První zdroj:} obsahuje 800 rentgenů hrudníku ve velmi vysoké kvalitě včetně odpovídajících segmentačních masek. Obrázky jsou dobře anotovány a poskytují jasné a přesné zobrazení plic, což je ideální pro přesnou segmentaci. Tato datová sada je dostupná na stránkách \href{https://www.kaggle.com/datasets/nikhilpandey360/chest-xray-masks-and-labels}{Kaggle} \footnote{Pro více informací k datové sadě viz také články \cite{LungDatasetNeeded, LungDatasetNeeded2}.}.
     \item \textbf{Druhý zdroj:} zahrnuje přes 6 000 rentgenů hrudníku v nižší kvalitě ve srovnání s prvním zdrojem. Navzdory snížené kvalitě obrázků jsou tyto snímky stále vhodné pro úlohy segmentace plic a významně zvyšují velikost datové sady, čímž poskytují rozmanitější tréninková data. Tato datová sada je dostupná na stránkách \href{https://data.mendeley.com/datasets/8gf9vpkhgy/1}{Mendeley}. \cite{LungDataset2}
 \end{itemize}
 
@@ -834,10 +835,10 @@ Datová sada zahrnuje téměř 600 rentgenových snímků zubů, z čehož bude 
     \label{fig:teethLabel}
 \end{figure}
 
-Pro lepší orientaci je ústní dutina rozdělena do čtyř kvadrantů a zuby jsou označeny ve směru hodinových ručiček dvojčíslím, kde první číslo označuje číslo zubu a druhé kvadrant, ve kterém se zub nachází viz \ref{fig:teethLabel}. Toto označení se zubů nazývá FDI a zahrnuje všechny důležité informace, což usnadňuje přesné a konzistentní anotování.
+Pro lepší orientaci je ústní dutina rozdělena do čtyř kvadrantů a zuby jsou označeny ve směru hodinových ručiček dvojčíslím, kde první číslo označuje číslo zubu a druhé kvadrant, ve kterém se zub nachází viz \ref{fig:teethLabel}. Toto označení zubů se nazývá FDI \cite{FDI-teeth_labeling} a zahrnuje všechny důležité informace, což usnadňuje přesné a konzistentní anotování.
 
 \subsection{Aplikace šumu na snímky v datové sadě}
-Následující sekce je soustředěna na přidávání šumu do snímků ve vytvořené datové sadě, aby bylo možné vytvořit trénovací a validační sady pro vyhodnocování algoritmů pro redukci šumu. V první kapitole byly popsány nejčastěji se vyskytující typy šumu ve snímcích. V této práci se zaměřím na redukci tří nejčastějších typů šumů v rentgenových snímcích: speckle šum, impulzní šum a Poissonův šum \cite{MostCommonNoises}.
+Následující sekce je soustředěna na přidávání šumu do snímků ve vytvořené datové sadě, aby bylo možné vytvořit trénovací a validační sady pro vyhodnocování algoritmů redukce šumu. V první kapitole byly popsány nejčastěji se vyskytující typy šumu ve snímcích. V této práci se zaměřím na redukci tří nejčastějších typů šumů v rentgenových snímcích: speckle šum, impulzní šum a Poissonův šum \cite{MostCommonNoises}.
 
 Ve vytvořené datové sadě se nachází 5000 rentgenů hrudníku a 500 rentgenů zubů. Na snímky budou aplikovány zmíněné typy šumů následovně:
 
@@ -847,7 +848,7 @@ Ve vytvořené datové sadě se nachází 5000 rentgenů hrudníku a 500 rentgen
         \hline
         \textbf{Část datasetu v \%} & \textbf{Typ aplikovaného šumu}                    \\ \hline
         0-20   & Na snímky v tomto rozsahu bude aplikován šum typu speckle.             \\ \hline
-        20-40  & Další část bude ovlivněna typem šumu soli a pepře.                     \\ \hline
+        20-40  & Tato část bude ovlivněna typem šumu soli a pepře.                      \\ \hline
         40-60  & Tento rozsah bude zašuměn Poissonův šumem.                             \\ \hline
         60-80  & Zde bude aplikována náhodná kombinace dvou typů šumu.                  \\ \hline
         80-100 & Poslední část snímků bude zašuměna všemi třemi typy šumu.              \\ 
@@ -861,7 +862,7 @@ Tento postup umožňuje vytvoření různých úrovní obtížnosti při odstra�
 
 Nejprve jsem aplikoval jednotlivé typy šumů samostatně na části datasetu (první tři řádky v tabulce \ref{table:noiseTypes}), což vytváří relativně jednoduše odstranitelné šumové artefakty. Tímto způsobem můžu zhodnotit základní schopnosti algoritmů pro redukci šumu efektivně odstraňovat každý typ šumu zvlášť. Čtvrtý řádek v tabulce \ref{table:noiseTypes} představuje střední úroveň obtížnosti. Tento krok testuje algoritmy v situacích, kde musí řešit více šumových podmínek současně, což simuluje složitější a realističtější scénáře, jaké mohou nastat v praxi. Poslední řádek tabulky \ref{table:noiseTypes} odpovídá nejnáročnějším scénářům pro vytvořené algoritmy, které musí být schopny odstranit kombinaci různých typů šumů. Tyto snímky jsou klíčové pro testování a vývoj velmi robustních modelů, které mohou efektivně fungovat v nejrůznějších reálných situacích.
 
-Tento stratifikovaný přístup k aplikaci šumu nejen zajišťuje důkladné testování algoritmů pro redukci šumu ve snímcích, ale také pomáhá při vývoji a ladění modelů, které jsou schopny se přizpůsobit různým úrovním šumové zátěže. Tímto způsobem dosáhnu komplexního hodnocení a vývoje efektivních technik pro zpracování rentgenových snímků v různých podmínkách.
+Tento stratifikovaný přístup k aplikaci šumu nejen zajišťuje důkladné testování algoritmů pro redukci šumu ve snímcích, ale také pomáhá při vývoji a ladění modelů, které jsou schopny se přizpůsobit různým úrovním šumové zátěže. Tímto způsobem dosáhnu komplexního hodnocení technik pro zpracování rentgenových snímků v různých podmínkách.
 
 \subsubsection{Měření hodnoty šumu ve snímcích}
 Pro aplikaci šumu na snímky jsem využil knihovnu \texttt{numpy} \cite{Numpy}, se kterou jsem implementoval funkce pro přidání speckle šumu, šumu soli a pepře a Poissonova šumu. Hlavním parametrem těchto funkcí je intenzita šumu, nikoli jeho směrodatná odchylka (std). Použití intenzity jako parametru je praktické pro aplikaci různých úrovní šumu, ale pro analýzu a srovnání je často nutné znát skutečnou směrodatnou odchylku šumu v obraze. Proto jsem vyvinul následující funkci, která odhaduje směrodatnou odchylku šumu v obraze pomocí extrakce segmentů (anglicky "patches") a analýzy hlavních komponent (PCA). Následující kód ukazuje implementaci zmíněné funkce\footnote{Kompletní implementace funkcí pro přidání šumu lze nalézt v GitHub repozitáři této práce.}.
@@ -909,7 +910,7 @@ Tato funkce mi umožňuje kvantifikovat a porovnávat úrovně šumu a pomocí t
 \end{figure}
 
 \section{Návrh metod vhodných pro předzpracování rentgenových snímků}
-V této části se budu zabývat charakteristikou použitých knihoven a technologií, nastavením projektu pomocí nástroje Poetry a implementací různých standardních metod používaných pro odstranění šumu a zlepšení kvality obrazu. Zatímco teoretické pozadí a principy těchto metod byly popsány v teoretické části této práce, následující část se zaměřuje na praktické aspekty jejich implementace, včetně jakýchkoliv dalších algoritmů, které dosud nebyly zmíněny. Dále vysvětlím použití tzv. \textit{Ensemble Averaging} postupu, který napomáhá ke zlepšení robustnosti algoritmů pro redukci šumu.
+V této části se budu zabývat charakteristikou použitých knihoven a technologií, nastavením projektu pomocí nástroje Poetry \cite{Poetry} a implementací různých standardních metod používaných pro odstranění šumu a zlepšení kvality obrazu. Zatímco teoretické pozadí a principy těchto metod byly popsány v teoretické části této práce, následující část se zaměřuje na praktické aspekty jejich implementace, včetně jakýchkoliv dalších algoritmů, které dosud nebyly zmíněny. Dále vysvětlím použití tzv. \textit{Ensemble Averaging} postupu \cite{EnsembleAveraging}, který napomáhá ke zlepšení robustnosti algoritmů pro redukci šumu.
 
 \subsection{Struktura projektu, použité knihovny a technologie}
 Pro tento projekt jsem zvolil nástroj Poetry, který umožňuje snadnou správu závislostí a vytváření virtuálních prostředí. Poetry poskytuje pohodlný způsob, jak udržovat konzistenci balíčků a odděluje závislosti projektu od systémových knihoven. To usnadňuje sdílení projektu a zajišťuje, že všechny potřebné knihovny budou správně nainstalovány.
@@ -935,7 +936,7 @@ Po instalaci Poetry je nutné se přesunout do kořenového adresáře projektu 
 \end{lstlisting}
 
 \subsubsection{Použité knihovny}
-V tomto projektu jsem použil několik důležitých knihoven. Nejvýznamnější z nich je \textbf{PyTorch Lightning}, která usnadňuje implementaci neuronových sítí a byla vybrána pro snadné a přehledné trénování modelů. Další důležité knihovny zahrnují již dříve zmíněný NumPy pro numerické výpočty, scikit-image pro zpracování snímků a Matplotlib pro vizualizaci dat. Následující tabulka ukazuje kompletní přehled použitých závislostí v této práci:
+V tomto projektu jsem použil několik důležitých knihoven. Nejvýznamnější z nich je \textbf{PyTorch Lightning} \cite{Pytorchlightning}, která usnadňuje implementaci neuronových sítí a byla vybrána pro snadné a přehledné trénování modelů. Další důležité knihovny zahrnují již dříve zmíněný NumPy pro numerické výpočty, scikit-image \cite{Scikit} pro zpracování snímků a Matplotlib \cite{Matplotlib} pro vizualizaci dat. Následující tabulka ukazuje kompletní přehled použitých závislostí v této práci:
 
 \begin{table}[h]
     \centering
@@ -980,7 +981,7 @@ V této práci jsem se zaměřil na implementaci vybraných standardních metod 
 
 Většina uvedených metod byla implementována s využitím knihoven \texttt{scipy} \cite{scipy} a \texttt{skimage} \cite{scikit}, které poskytují optimalizované a efektivní řešení. Vzhledem k tomu, že dataset obsahuje 5500 snímků, je výpočetní efektivita klíčová pro zpracování v rozumném čase.
 
-Některé z metod nebyly ve zmíněných knihovnách dostupné, bylo proto nutné je implementovat svépomocí. Jedná se o adaptivní mediánový filtr a Frost filtr. Tyto metody jsem se snažil navrhnout tak, aby byly efektivní a rychlé, zejména Frost filtr bylo nutné implementovat s využitím knihovny \texttt{numba} \cite{numba}, která umožňuje provádět náročné výpočty na grafické kartě, což výrazně zrychlilo zpracování. Níže je uveden příklad implementace Frostova filtru:
+Některé z metod nebyly ve zmíněných knihovnách dostupné, bylo proto nutné je implementovat svépomocí. Jedná se o adaptivní mediánový filtr a Frost filtr \cite{FrostFilter}. Tyto metody jsem se snažil navrhnout tak, aby byly efektivní a rychlé, zejména Frost filtr bylo nutné implementovat s využitím knihovny \texttt{numba} \cite{numba}, která umožňuje provádět náročné výpočty na grafické kartě, což výrazně zrychlilo zpracování. Níže je uveden příklad implementace Frostova filtru:
 
 \begin{lstlisting}[language=Python, caption={Implementace Frost filtru s využitím Numba CUDA}, label={lst:frost_filter}]
     @numba.jit(nopython=True)
@@ -1346,7 +1347,7 @@ Segmentační modely sítě U-Net jsem trénoval na několika datových sadách.
 Před samotným měřením vlivu předzpracování na segmentační modely, je důležité pochopit, jak různé přístupy k předzpracování ovlivňují kvalitu segmentace při různých problémech. Jak již bylo popsáno v sekci zaměřené na popis datových sad, je pro tento účel nutné rozlišovat mezi jednoduššími a složitějšími úlohami segmentace. Proto jsou v následujících podsekcích uvedeny výsledky měření pro dvě odlišné úlohy: binární segmentace rentgenových snímků plic a vícetřídní segmentace rentgenových snímků zubů. Tato rozdělení umožňují detailně posoudit efektivitu jednotlivých metod předzpracování v různých kontextech.
 
 \subsection{Měření vlivu předzpracování obrazu na binární segmentaci rentgenových snímků plic}
-Pro měření vlivu předzpracování dat bylo trénováno několik různých kombinací modelů, které měli odhalit, zda a jaký má předzpracování dopad na průběh trénování a výkon jednotlivých modelů. Modelů bylo trénováno několik s odlišnými hyperparametry a s aplikací augmentačních technik. Už u prvních modelů bylo patrné, že úloha segmentace plic není obtížná a architektura U-Net si dokáže poradit se znehodnocenými snímky s přidaným šumem. I doba učení se téměř neměnila a všechny učené modely bylo dotrénovány přibližně kolem 30 epochy. 
+Pro měření vlivu předzpracování dat bylo trénováno několik různých kombinací modelů, které měly odhalit, zda a jaký má předzpracování dopad na průběh trénování a výkon jednotlivých modelů. Modelů bylo trénováno několik s odlišnými hyperparametry a s aplikací augmentačních technik. Už u prvních modelů bylo patrné, že úloha segmentace plic není obtížná a architektura U-Net si dokáže poradit se znehodnocenými snímky s přidaným šumem. I doba učení se téměř neměnila a všechny učené modely byly dotrénovány přibližně kolem 30 epochy. 
 
 Navzdory různým nastavením hyperparametrů a aplikaci augmentačních technik vykazovaly všechny modely známky přeučení přibližně po zmíněných 30 epochách. To naznačuje, že problém binární segmentace snímků plic je relativně jednoduchý a model U-Net je schopen detekovat okraje plic a jejich tvar i přes vrstvu šumu bez potřeby intenzivního předzpracování.
 
@@ -1432,7 +1433,7 @@ Hlavním cílem této diplomové práce bylo zjistit jaký vliv má předzpracov
 
 V úvodní části práce byla pozornost věnována primárně vybraným standardním algoritmům, vylepšující obraz a redukující šum, se zaměřením na základní principy jejich fungování. V návaznosti se práce zaměřila na představení základního přehledu neuronových sítí, využívaných zejména pro práci s obrazovými daty, podrobně byly popsány jejich hlavní komponenty, struktura a funkčnost. V neposlední řadě byly vylíčeny techniky augmentace dat, které zvyšují rozmanitost tréninkových sad a podporují lepší generalizaci modelů.
 
-Začátek druhé kapitoly byl zaměřen na popis dvou vybraných datových sad, které obsahovaly rentgenové snímky plic a panoramatické snímky zubů. Zmíněné datové sady reprezentovaly dvě úrovně složitosti problémů, aby bylo možné důkladně prozkoumat vliv předzpracování dat, a zda je neuronová síť U-Net schopna adaptovat se na degradována obrazová data. Na rentgenové snímky z datových sad byly aplikovány tři druhy nejčastěji se vyskytujících šumů v rentgenových snímcích samostatně nebo v kombinaci. Z popsaných standardních metod byly následně vybrány ty, které se ukázaly jako nejúčinnější při redukci šumu ve vytvořených datech a byla z nich vytvořena metoda zvaná \textit{ensemble averaging}. Zvláštní pozornost byla věnována implementaci vybraných architektur neuronových sítí pro redukci šumu, jako je autoenkodér pro redukci šumu (\textit{DAE}) a konvoluční neuronová síť pro redukci šumu (\textit{DnCNN}), jenž se staly hlavním bodem zájmu při zlepšování kvality obrazových dat.
+Začátek druhé kapitoly byl zaměřen na popis dvou vybraných datových sad, které obsahovaly rentgenové snímky plic a panoramatické snímky zubů. Zmíněné datové sady reprezentovaly dvě úrovně složitosti problémů, aby bylo možné důkladně prozkoumat vliv předzpracování dat, a zda je neuronová síť U-Net schopna adaptovat se na degradovaná obrazová data. Na rentgenové snímky z datových sad byly aplikovány tři druhy nejčastěji se vyskytujících šumů v rentgenových snímcích samostatně nebo v kombinaci. Z popsaných standardních metod byly následně vybrány ty, které se ukázaly jako nejúčinnější při redukci šumu ve vytvořených datech a byla z nich vytvořena metoda zvaná \textit{ensemble averaging}. Zvláštní pozornost byla věnována implementaci vybraných architektur neuronových sítí pro redukci šumu, jako je autoenkodér pro redukci šumu (\textit{DAE}) a konvoluční neuronová síť pro redukci šumu (\textit{DnCNN}), jenž se staly hlavním bodem zájmu při zlepšování kvality obrazových dat.
 
 V poslední části práce byl měřen vliv předzpracování dat na výkonnost modelů neuronové sítě U-Net pro segmentaci obrazu. Nejprve byly provedeny experimenty s binární segmentací rentgenových snímků plic, které sloužily pro zjištění, zda je nutné používat techniky předzpracování i pro snadné úlohy segmentace. Poté se práce zaměřila na složitější úlohu segmentace zubů, kde obtížnost nespočívala pouze v ohodnocení samotných zubů, ale také v menší velikosti datové sady. Na této úloze bylo jasně znatelné zlepšení v případě použití technik pro předzpracování obrazu, avšak augmentace dat přispěla k výkonnosti modelů jen mírně. Výsledky naznačily, že pro takto složité úlohy je potřeba jak kvalitní předzpracování dat, tak i dostatečně velká a rozmanitá datová sada.
 
@@ -1463,6 +1464,7 @@ Celkově tato práce ukázala, že účinnost předzpracování a augmentace dat
 %V každém případě by to však měli být pouze materiály, které jste vytvořili sami. Materiály jiných autorů uvádějte v seznamu použité %literatury (včetně případných odkazů na jejich originální umístění).
 
 %V této kapitole stačí uvést pouze základní strukturu úložiště (co se kde nalézá a jakou má funkci) například v podobě tabulky. 
+
 Externí přílohy této diplomové práce jsou umístěny na adrese: \\
 \url{https://github.com/Cemonix/Impact-of-Preprocessing}
 
