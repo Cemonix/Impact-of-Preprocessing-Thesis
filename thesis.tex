@@ -1301,11 +1301,31 @@ Architektura DAE je detailně znázorněna na diagramu \ref{fig:DAE}. Diagram il
 
 \clearpage
 
-\subsection{Výsledky neuronových sítí DnCNN a DAE při redukování šumu v rentgenových snímcích}
-Pro vyhodnocení výkonu natrénovaných modelů neuronových sítí je nezbytné stanovit kvalitu samotných zašuměných snímků v porovnání s jejich originálními protějšky. Tato základní úroveň pomáhá pochopit rozsah zlepšení dosaženého modely pro odstranění šumu. Průměrná hodnota naměřené metriky PSNR pro zašuměné snímky je zhruba 25dB a průměrná hodnota SSIM vychází přibližně 60 \%.
+\section{Výsledky standardních metod a neuronových sítí DnCNN a DAE při redukování šumu v rentgenových snímcích}
+Pro vyhodnocení výkonu standardních metod a natrénovaných modelů neuronových sítí je nezbytné stanovit kvalitu samotných zašuměných snímků v porovnání s jejich originálními protějšky. Toto vyhodnocení pomáhá pochopit rozsah zlepšení dosaženého metodami a modely pro odstranění šumu. Průměrná hodnota naměřené metriky PSNR pro zašuměné snímky je zhruba 25 dB a průměrná hodnota SSIM vychází přibližně 60 \%.
 
-\subsubsection{Vyhodnocení natrénovaných modelů sítě DnCNN}
-Modely trénované na architektuře DnCNN, byly velmi úspěšné při odstraňování šumu a značně vylepšily kvalitu daných rentgenových snímků. Model s nejlepšími výsledky byl trénován po dobu 55 epoch a dosáhl průměrného PSNR  dB a SSIM 91 \%, což ukazuje podstatné zvýšení měřených metrik jak v redukci šumu, tak ve strukturální podobnosti. Model byl trénován na snímcích z obou datových sad, protože základní charakteristiky šumu rentgenových snímků nevyžadují rozlišování mezi rentgenovými snímky plic nebo zubů. Na snímcích \ref{fig:DnCNN_lungs} a \ref{fig:DnCNN_teeth} je ukázán příklad použití nejlepšího natrénovaného modelu. Z ukázky je patrné, že došlo k velmi účinné redukci šumu se zachováním podstatných detailů.
+\subsection{Vyhodnocení standardních metod}
+Standardní metody v podobě ensemble averaging vykozovali velmi dobré výsledky při redukci Poissonova a speckle šumu. V případě šumu soli a pepře nebo kombinací šumů, ve kterých se tento šum soli a pepře vyskytoval, již metody ztráceli na účinnosti. Průměrně ensemble averaging dosáhl metriky PSNR 29 dB a metriky SSIM 85 \%, což v porovnání se zašuměnými snímky vykazuje zlepšení a použitím těchto metod vede ke zlepšení kvality daných snímků. V tabulce \ref{tab:EnsembleResults} jsou ukázány výsledky ensemble averaging pro jednotlivé typy šumů a jejich kombinací.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|l|}
+    \hline
+    \textbf{Typ šumu}               & \textbf{PSNR} & \textbf{SSIM} \\ \hline
+    Poissonův                       & 37 dB         &  96 \%        \\ \hline
+    Speckle                         & 33 dB         &  86 \%        \\ \hline
+    Sůl a pepř                      & 27 dB         &  70 \%        \\ \hline
+    Poissonův, speckle              & 31 dB         &  83 \%        \\ \hline
+    Poissonův, sůl a pepř           & 26 dB         &  70 \%        \\ \hline
+    Speckle, sůl a pepř             & 25 dB         &  65 \%        \\ \hline
+    Poissonův, speckle, sůl a pepř  & 25 dB         &  63 \%        \\ \hline
+    \end{tabular}
+    \caption{Ukázka výsledků kvalitu obrazu po odšumění pomocí ensemble averaging}
+    \label{tab:EnsembleResults}
+\end{table}
+
+\subsection{Vyhodnocení natrénovaných modelů sítě DnCNN}
+Modely trénované na architektuře DnCNN, byly velmi úspěšné při odstraňování šumu a značně vylepšily kvalitu daných rentgenových snímků. Model s nejlepšími výsledky byl trénován po dobu 55 epoch a dosáhl průměrného PSNR 31 dB a SSIM 91 \%, což ukazuje podstatné zvýšení měřených metrik jak v redukci šumu, tak ve strukturální podobnosti. Model byl trénován na snímcích z obou datových sad, protože základní charakteristiky šumu rentgenových snímků nevyžadují rozlišování mezi rentgenovými snímky plic nebo zubů. Hodnoty metrik pro jednotlivé typy šumů je možné vidět v tabulce \ref{tab:DnCNNResults}. Z výsledků je patrné, že model sítě DnCNN dokáže velmi dobře potlačit téměř všechny typy šumů, ovšem jako v případě ensemble averiging nejmenší zlepšení vykazují snímky, na které byl aplikován šum soli a pepře. Na snímcích \ref{fig:DnCNN_lungs} a \ref{fig:DnCNN_teeth} je ukázán příklad použití nejlepšího natrénovaného modelu. Ze snímků je patrné, že došlo k velmi účinné redukci šumu se zachováním podstatných detailů.
 
 \begin{figure}[h]
     \centering
@@ -1321,22 +1341,56 @@ Modely trénované na architektuře DnCNN, byly velmi úspěšné při odstraňo
     \label{fig:DnCNN_teeth}
 \end{figure}
 
-\subsubsection{Vyhodnocení natrénovaných modelů sítě DAE}
-Následně byla hodnocena výkonnost autoenkodér pro redukci šumu (DAE), což je složitý model s přibližně 10 miliony parametry. Než jsem dospěl k nejlepšímu modelu, bylo nutné vytvořit několik variant základní architektury DAE. Nejdříve jsem zkoušel jednoduchou síť s pár vrstvami bez použití skip connections. Tento model ovšem nebyl úspěšný. Další model byl navržen v podobném duchu jako DnCNN a jeho úkolem bylo detekovat šum, nikoli tvořit nový odšuměný snímek. To se ovšem ukázalo jako liché a tento přístup také nebyl úspěšný. Nejlepší model byl natrénován pomocí architektury nastíněné výše s využitím augmentačních technik popsaných v tabulce \ref{tab:DAE_augmentation}. Přes svůj potenciál architektura DAE nedosáhla tak dobrých výsledků jako DnCNN. Tento suboptimální výkon je přičítán složitosti modelu a omezenému množství tréninkových dat, což vedlo k přeučení po zhruba 30 epochách u nejlepšího modelu. DAE dosáhl průměrného PSNR kolem 22 dB, což znamená sníženou účinnost při odstraňování šumu ve srovnání s DnCNN. Nicméně hodnota SSIM pro DAE byla 71 \%, což je hodnota nižší v porovnání s DnCNN, stále ale představuje přiměřenou strukturální podobnost.
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|l|}
+    \hline
+    \textbf{Typ šumu}               & \textbf{PSNR} & \textbf{SSIM} \\ \hline
+    Poissonův                       & 36 dB         &  97 \%        \\ \hline
+    Speckle                         & 34 dB         &  93 \%        \\ \hline
+    Sůl a pepř                      & 29 dB         &  85 \%        \\ \hline
+    Poissonův, speckle              & 33 dB         &  92 \%        \\ \hline
+    Poissonův, sůl a pepř           & 29 dB         &  85 \%        \\ \hline
+    Speckle, sůl a pepř             & 28 dB         &  83 \%        \\ \hline
+    Poissonův, speckle, sůl a pepř  & 28 dB         &  83 \%        \\ \hline
+    \end{tabular}
+    \caption{Ukázka výsledků kvalitu obrazu po odšumění pomocí ensemble averaging}
+    \label{tab:DnCNNResults}
+\end{table}
+
+\subsection{Vyhodnocení natrénovaných modelů sítě DAE}
+Následně byla hodnocena výkonnost autoenkodér pro redukci šumu (DAE), což je složitý model s přibližně 10 miliony parametry. Než jsem dospěl k nejlepšímu modelu, bylo nutné vytvořit několik variant základní architektury DAE. Nejdříve jsem zkoušel jednoduchou síť s pár vrstvami bez použití skip connections. Tento model ovšem nebyl úspěšný. Další model byl navržen v podobném duchu jako DnCNN a jeho úkolem bylo detekovat šum, nikoli tvořit nový odšuměný snímek. To se ovšem ukázalo jako liché a tento přístup také nebyl úspěšný. Nejlepší model byl natrénován pomocí architektury nastíněné výše s využitím augmentačních technik popsaných v tabulce \ref{tab:DAE_augmentation}. Přes svůj potenciál architektura DAE nedosáhla tak dobrých výsledků jako DnCNN. Tento suboptimální výkon je přičítán složitosti modelu a omezenému množství tréninkových dat, což vedlo k přeučení po zhruba 30 epochách u nejlepšího modelu. DAE dosáhl průměrného PSNR kolem 23 dB, což znamená sníženou účinnost při odstraňování šumu ve srovnání s DnCNN. Nicméně hodnota SSIM pro DAE byla 80 \%, což je hodnota nižší v porovnání s DnCNN, stále ale představuje přiměřenou strukturální podobnost. Jako v případě předešlých vyhodnocení jsou výsledky pro jednotlivé typy šumů zobrazeny v následující tabulce \ref{tab:DAEResults}. Výsledky ukazují, že u mnoha typů šumů došlo v metrice PSNR ke zhoršení, ale metrika SSIM vykazuje pro každý typ šumu vyšší hodnotu než v případě zašuměných snímků. To poukazuje na fakt, že snímky byly vylepšeny, ale jelikož autoenkodér snímek vytváří, tak mohlo dojít ke ztrátě některých informací.
 
 \begin{table}[h]
     \centering
     \begin{tabular}{|l|l|l|}
     \hline
-    \textbf{Augmentace}  & \textbf{Popis}                            & \textbf{Pravděpodobnost}   \\ \hline
-    Gaussovský blur      & Aplikuje Gaussovské rozostření.           &  20 \%                     \\ \hline
-    Ostrost obrazu       & Upravuje ostrost obrazu.                  &  20 \%                     \\ \hline
-    Autokontrast         & Automaticky vyrovnává kontrast snímků.    &  30 \%                     \\ \hline
-    Ekvalizace           & Ekvalizace histogramu.                    &  40 \%                     \\ \hline
-    Horizontální otočení & Horizontální překlopení snímku.           &  50 \%                     \\ \hline
+    \textbf{Augmentace}  & \textbf{Popis}                          & \textbf{Pravděpodobnost} \\ \hline
+    Gaussovský blur      & Aplikuje Gaussovské rozostření.         &  20 \%                   \\ \hline
+    Ostrost obrazu       & Upravuje ostrost obrazu.                &  20 \%                   \\ \hline
+    Autokontrast         & Automaticky vyrovnává kontrast snímků.  &  30 \%                   \\ \hline
+    Ekvalizace           & Ekvalizace histogramu.                  &  40 \%                   \\ \hline
+    Horizontální otočení & Horizontální překlopení snímku.         &  50 \%                   \\ \hline
     \end{tabular}
     \caption{Přehled augmentací aplikovaných při učení DAE}
     \label{tab:DAE_augmentation}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|l|}
+    \hline
+    \textbf{Typ šumu}               & \textbf{PSNR} & \textbf{SSIM} \\ \hline
+    Poissonův                       & 26 dB         &  87 \%        \\ \hline
+    Speckle                         & 26 dB         &  85 \%        \\ \hline
+    Sůl a pepř                      & 23 dB         &  82 \%        \\ \hline
+    Poissonův, speckle              & 25 dB         &  85 \%        \\ \hline
+    Poissonův, sůl a pepř           & 23 dB         &  82 \%        \\ \hline
+    Speckle, sůl a pepř             & 23 dB         &  80 \%        \\ \hline
+    Poissonův, speckle, sůl a pepř  & 23 dB         &  80 \%        \\ \hline
+    \end{tabular}
+    \caption{Ukázka výsledků kvalitu obrazu po odšumění pomocí ensemble averaging}
+    \label{tab:DAEResults}
 \end{table}
 
 \section{Aplikace implementovaných metod a měření vlivu předzpracování na efektivitu segmentačních modelů}
