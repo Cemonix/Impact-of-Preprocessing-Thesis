@@ -144,7 +144,7 @@
 \renewcommand{\lstlistlistingname}{Sazba zdrojových kódů}
 
 \begin{document}
-\afterpage{\null\newpage}
+% \afterpage{\null\newpage}
 \thispagestyle{empty}
 \begin{center}
 {
@@ -238,7 +238,7 @@ V Ústí nad Labem dne \today   \hfill Podpis: \makebox[4cm][s]{\dotfill}
 \end{flushright}
 
 \cleardoublepage
-
+\thispagestyle{empty}
 \textsc{\nazevcz}
 
 \textbf{Abstrakt:}
@@ -257,8 +257,8 @@ Hlavním cílem této diplomové práce je ohodnotit vliv předzpracování obra
 The main objective of this thesis is to measure the impact of image preprocessing and data augmentation on the segmentation of X-ray images. The reader is first introduced to standard algorithms for image enhancement and noise reduction. Furthermore, neural networks and the basic principles of their operation are presented, along with the implementation of selected architectures for noise reduction. Finally, the described methods are applied to X-ray images from two datasets, and the performance and efficiency of the image segmentation models are measured depending on the prior data processing.
 
 \textbf{Keywords:} Image preprocessing, Neural networks, Image segmentation, U-Net
-
 \tableofcontents
+\thispagestyle{empty}
 
 \addchap{Úvod}
 Segmentace lékařských snímků je klíčovou oblastí, která výrazně ovlivňuje kvalitu a efektivitu diagnostických procesů. V dnešní době, kdy je stále více kladen důraz na rychlou a přesnou diagnózu, se využití automatizovaných metod stává nezbytnou součástí při zpracování medicínských dat. Tradiční metody segmentace, založené na ručním označování, jsou časově velmi náročné a mohou být náchylné na tvorbu chyb. S rozvojem umělé inteligence a hlubokého učení se otevírá možnost využití pokročilých algoritmů, které mohou tento proces výrazně urychlit a zefektivnit. Tyto metody jsou ovšem velmi často aplikovány na data, která nemusí být ve vysoké kvalitě či mohou být určitým stylem degradována, a proto může být pro algoritmy obtížné vykonat zadanou úlohu správně.
